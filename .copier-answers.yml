@@ -1,11 +1,21 @@
-_commit: v2.21.5
+_commit: v2.21.6
 _src_path: https://github.com/quokkify/project-toolkit.git
-allure_report: false
+allure_categories_file: ""
+allure_external_artifact_max_count: 50
+allure_external_artifact_min_count: 1
+allure_external_artifact_prefix: allure-results-
+allure_external_workflow_name: Validate
+allure_external_workflow_path: .github/workflows/validate.yml
+allure_publish_pages: false
+allure_report: true
+codeql: true
+codeql_languages: []
 components:
-  - type: java
-    path: .
+  - path: .
+    type: java
 docker: false
 project_name: Path of Exile Starter
+release_mode: single
 release_please: true
 renovate: true
 renovate_config_repository: quokkify/renovate-presets
@@ -13,4 +23,4 @@ renovate_presets:
   - default
   - github-actions
   - java
-toolkit_version: v2.21.5
+toolkit_version: v2.21.6

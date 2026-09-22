@@ -1,44 +1,61 @@
-name: "CodeQL security static code analysis"
+name: CodeQL
 
 on:
+  pull_request:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
   schedule:
-    - cron: "0 0 * * 6"
+    - cron: "0 3 * * 6"
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   analyze:
-    permissions:
-      actions: read # for github/codeql-action/init to get workflow details
-      contents: read # for actions/checkout to fetch code
-      security-events: write # for github/codeql-action/autobuild to send a status report
-    name: Analyze
+    name: Analyze (${{ matrix.language }})
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
       fail-fast: false
+      matrix:
+        language: ["actions", "java-kotlin"]
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
     steps:
-      - name: 🔨Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # Fetch at least the immediate parents so that if this is
-          # a pull request then we can checkout the head.
           fetch-depth: 2
-      - name: 🔨Setup java
-        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
+          persist-credentials: false
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4
         with:
-          distribution: "temurin"
-          cache: "gradle"
-          java-version: "25"
-      - name: 🔨Initialize CodeQL
-        uses: github/codeql-action/init@7211b7c8077ea37d8641b6271f6a365a22a5fbfa # v4
+          languages: ${{ matrix.language }}
+          build-mode: none
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4
         with:
-          languages: java
-      - name: 🔨Autobuild
-        uses: github/codeql-action/autobuild@7211b7c8077ea37d8641b6271f6a365a22a5fbfa # v4
-      - name: 🔐Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@7211b7c8077ea37d8641b6271f6a365a22a5fbfa # v4
+          category: "/language:${{ matrix.language }}"
+
+  complete:
+    name: CodeQL
+    needs: analyze
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Validate analysis result
+        env:
+          ANALYZE_RESULT: ${{ needs.analyze.result }}
+        run: |
+          if [[ "$ANALYZE_RESULT" != "success" ]]; then
+            echo "CodeQL analysis did not succeed: $ANALYZE_RESULT" >&2
+            exit 1
+          fi

@@ -1,0 +1,202 @@
+name: Validate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  template-contract:
+    name: Shared template contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14"
+      - name: Validate generated configuration
+        run: |
+          python -m pip install PyYAML==6.0.3
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import yaml
+
+          answers = yaml.safe_load(Path(".copier-answers.yml").read_text())
+          required_answers = ("_src_path", "_commit", "toolkit_version")
+          if not isinstance(answers, dict) or any(not answers.get(key) for key in required_answers):
+              raise SystemExit(".copier-answers.yml must contain _src_path, _commit, and toolkit_version")
+          if answers["_commit"] != answers["toolkit_version"]:
+              raise SystemExit("Copier _commit must match toolkit_version")
+          renovate_path = Path(".github/renovate.json")
+          if answers.get("renovate") and not renovate_path.is_file():
+              raise SystemExit("renovate=true requires .github/renovate.json")
+          codeql_path = Path(".github/workflows/codeql.yml")
+          if answers.get("codeql") and not codeql_path.is_file():
+              raise SystemExit("codeql=true requires .github/workflows/codeql.yml")
+          allure_paths = (
+              Path(".github/workflows/allure-report.yml"),
+              Path(".github/allure/allurerc.mjs"),
+              Path(".github/allure/safe_extract.py"),
+          )
+          if answers.get("allure_report") and any(not path.is_file() for path in allure_paths):
+              raise SystemExit("allure_report=true requires its generated workflow, config, and bounded extractor")
+          components = answers.get("components")
+          if answers.get("allure_report") and not components:
+              source_path = Path(str(answers.get("allure_external_workflow_path", "")))
+              if not source_path.is_file():
+                  raise SystemExit("external Allure reporting requires its configured source workflow")
+              minimum = answers.get("allure_external_artifact_min_count")
+              maximum = answers.get("allure_external_artifact_max_count")
+              if not isinstance(minimum, int) or not isinstance(maximum, int) or not 1 <= minimum <= maximum <= 50:
+                  raise SystemExit("external Allure artifact counts must satisfy 1 <= minimum <= maximum <= 50")
+          categories_file = answers.get("allure_categories_file")
+          if categories_file and not Path(str(categories_file)).is_file():
+              raise SystemExit("configured Allure categories file does not exist")
+          if answers.get("allure_publish_pages") and not answers.get("allure_report"):
+              raise SystemExit("allure_publish_pages=true requires allure_report=true")
+          for path in (renovate_path, Path(".github/release-please/config.json"), Path(".github/release-please/manifest.json")):
+              if path.exists():
+                  json.loads(path.read_text())
+          for path in Path(".github/workflows").glob("*.yml"):
+              text = path.read_text()
+              yaml.safe_load(text)
+              for line in text.splitlines():
+                  marker = "uses: quokkify/project-toolkit/"
+                  if line.lstrip().startswith(marker):
+                      reference = line.split("@", 1)[1].split()[0]
+                      comment = line.partition("#")[2].strip()
+                      pinned_release = len(reference) == 40 and all(char in "0123456789abcdef" for char in reference) and comment == answers["toolkit_version"]
+                      if reference != answers["toolkit_version"] and not pinned_release:
+                          raise SystemExit(f"{path} uses toolkit {reference}, expected {answers['toolkit_version']}")
+          PY
+      - name: Install actionlint
+        env:
+          ACTIONLINT_VERSION: 1.7.12
+        run: |
+          cd "$RUNNER_TEMP"
+          curl -fsSLo "actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLo actionlint_checksums.txt "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_checksums.txt"
+          grep -F " actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" actionlint_checksums.txt | sha256sum -c -
+          tar -xzf "actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" actionlint
+          mkdir -p "$RUNNER_TEMP/bin"
+          install -m 0755 actionlint "$RUNNER_TEMP/bin/actionlint"
+      - name: Lint workflows
+        run: |
+          "$RUNNER_TEMP/bin/actionlint" .github/workflows/*.yml
+      - name: Check committed diff whitespace
+        env:
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          if [[ ! "$BASE_SHA" =~ ^[0-9a-f]{40}$ || "$BASE_SHA" =~ ^0+$ ]]; then
+            git diff-tree --check --root "$HEAD_SHA"
+          else
+            git diff --check "$BASE_SHA..$HEAD_SHA"
+          fi
+
+  java-1:
+    name: java (.)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CI: true
+      GRADLE_OPTS: -Dorg.gradle.console=plain
+      COMPOSE_PROJECT_NAME: path-of-exile-starter
+      COMPOSE_PROFILES: mock
+      NINJA_USE_MOCK_SERVER_AS_PROXY: "true"
+      PATH_OF_EXILE_USE_MOCK_SERVER_AS_PROXY: "true"
+      MOCK_SERVER_HOST: mock-server
+      MOCK_SERVER_PORT: "1080"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Java and Gradle
+        id: java
+        uses: quokkify/project-toolkit/actions/setup-java-gradle@v2.21.6
+        with:
+          java-version: "25"
+      - name: Start integration-test services
+        uses: quokkify/project-toolkit/actions/compose-up@v2.21.6
+        with:
+          compose-files: |
+            tools/docker/docker-compose.yml
+            tools/docker/docker-compose.override.yml
+          services: mock-server spring-webflux-aggregator spring-telegram-webhook
+          profiles: mock
+          build: "true"
+          additional-compose-args: --quiet-pull
+          wait-urls: http://localhost:1080/mockserver/dashboard
+          timeout-seconds: "600"
+      - name: Run Gradle checks
+        uses: quokkify/project-toolkit/actions/gradle-retry@v2.21.6
+        with:
+          command: ${{ steps.java.outputs.gradle-command }} check --no-parallel --no-daemon --console=plain
+      - name: Publish JUnit summary
+        if: ${{ always() }}
+        uses: quokkify/project-toolkit/actions/junit-step-summary@v2.21.6
+        with:
+          junit-paths: "**/build/test-results/**/TEST-*.xml"
+          title: Java test results
+      - name: Gather Allure results
+        if: ${{ always() }}
+        run: |
+          set -euo pipefail
+          mkdir -p allure-results
+          found=0
+          while IFS= read -r -d '' directory; do
+            found=1
+            cp -a "$directory/." allure-results/
+          done < <(find . -type d -path "*/build/allure-results" -print0)
+          if [[ "$found" -eq 0 ]]; then
+            echo "No Gradle Allure results were produced." >&2
+            exit 1
+          fi
+      - name: Upload Allure results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: allure-results-java-1
+          path: allure-results
+          if-no-files-found: error
+          retention-days: 14
+      - name: Shut down integration-test services
+        if: ${{ always() }}
+        run: >-
+          docker compose
+          -f tools/docker/docker-compose.yml
+          -f tools/docker/docker-compose.override.yml
+          --profile mock down --volumes --remove-orphans
+
+  validation-complete:
+    name: Validation pipeline complete
+    needs: [template-contract, java-1]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Validate required jobs
+        env:
+          TEMPLATE_CONTRACT_RESULT: ${{ needs.template-contract.result }}
+          JAVA_RESULT: ${{ needs.java-1.result }}
+        run: |
+          if [[ "$TEMPLATE_CONTRACT_RESULT" != "success" || "$JAVA_RESULT" != "success" ]]; then
+            echo "Required validation jobs did not succeed: template=$TEMPLATE_CONTRACT_RESULT java=$JAVA_RESULT" >&2
+            exit 1
+          fi

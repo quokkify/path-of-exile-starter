@@ -1,0 +1,116 @@
+name: Update project template
+
+on:
+  workflow_dispatch:
+    inputs:
+      template-ref:
+        description: Optional project-toolkit ref; empty uses the latest released tag.
+        type: string
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: copier-template-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    name: Apply the shared project template
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out full repository history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python and Copier
+        uses: quokkify/project-toolkit/actions/setup-python@v2.21.6
+        with:
+          python-version: "3.14"
+          package-manager: pip
+          cache-dependencies: "false"
+          install-command: python -m pip install copier==9.18.2
+
+      - name: Apply the template and push the update branch
+        env:
+          TEMPLATE_REF: ${{ inputs.template-ref }}
+          GH_TOKEN: ${{ github.token }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          BRANCH: automation/copier-template-update
+        run: |
+          set -euo pipefail
+          ref="${TEMPLATE_REF:-}"
+          if [[ -z "$ref" ]]; then
+            ref="$(gh release view --repo quokkify/project-toolkit --json tagName --jq .tagName)"
+          fi
+
+          # Manual refs are an explicit trust boundary: only published, stable,
+          # exact release tags may select the template used with contents:write.
+          if [[ ! "$ref" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            printf 'Refused template ref %s: only exact SemVer release tags are allowed.\n' "$ref" >&2
+            exit 1
+          fi
+          release_json="$(gh release view "$ref" --repo quokkify/project-toolkit --json tagName,publishedAt,isDraft,isPrerelease)"
+          if ! jq -e --arg expected "$ref" '
+            .tagName == $expected and
+            (.publishedAt | type == "string" and length > 0) and
+            (.isDraft == false) and
+            (.isPrerelease == false)
+          ' <<<"$release_json" >/dev/null; then
+            printf 'Refused template ref %s: it is not an exact published stable release tag.\n' "$ref" >&2
+            exit 1
+          fi
+          echo "Updating to project-toolkit $ref"
+
+          git switch -C "$BRANCH"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          command=(copier update --trust --defaults --conflict=rej --skip-tasks --vcs-ref "$ref")
+          if [[ "$ref" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            command+=(--data "toolkit_version=$ref")
+          fi
+          "${command[@]}" .
+
+          # A partial update is never pushed. Conflicts fail the run the same way the fleet
+          # automation fails a repository, so the branch never holds a half-applied template
+          # that a reviewer could mistake for a clean one.
+          mapfile -t rejected < <(find . -name '*.rej' -not -path './.git/*' -print)
+          if (( ${#rejected[@]} )); then
+            printf 'Copier produced conflict files:\n' >&2
+            printf '  %s\n' "${rejected[@]}" >&2
+            exit 1
+          fi
+
+          # Stage before checking for changes so Copier-created untracked files
+          # are included in the no-op decision.
+          git add --all
+          if git diff --cached --quiet; then
+            printf 'Already up to date with %s; nothing to push.\n' "$ref" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          git diff --cached --check
+          git commit -m "chore(template): update shared project template"
+
+          remote="$(git ls-remote --heads origin "refs/heads/$BRANCH" | cut -f1)"
+          if [[ -n "$remote" ]]; then
+            git push "--force-with-lease=refs/heads/$BRANCH:$remote" origin "HEAD:refs/heads/$BRANCH"
+          else
+            git push origin "HEAD:refs/heads/$BRANCH"
+          fi
+
+          # This workflow deliberately stops at the branch. A pull request opened with
+          # GITHUB_TOKEN does not trigger pull_request workflows, so its checks would never
+          # run and a required-status-check ruleset would block it forever. Opening it by
+          # hand costs one click and keeps every check honest.
+          {
+            printf '## Template update ready\n\n'
+            printf 'Updated to %s and pushed %s.\n\n' "$ref" "$BRANCH"
+            printf 'Open the pull request yourself so the checks actually run:\n\n'
+            printf '%s/%s/compare/%s...%s?expand=1\n' \
+              "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$DEFAULT_BRANCH" "$BRANCH"
+          } >> "$GITHUB_STEP_SUMMARY"

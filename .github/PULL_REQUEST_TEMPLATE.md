@@ -1,12 +1,23 @@
-## Proposed changes
+## Description
 
-Closes #issue
+<!-- What changed and why? Normal PRs need no release-note sections. -->
 
-Describe the big picture of your changes here to communicate to the maintainers why we should accept this pull request.
-If it fixes a bug or resolves a feature request, be sure to link to that issue.
+## Release notes
 
-## Checklist
+<!-- Optional user-facing context that does not fit the title or bullet. -->
 
-- [ ] Checkstyle and unit tests are passed locally with my changes by running <br>`gradlew check`
-- [ ] I have added tests that prove my fix is effective or that my feature works
-- [ ] I have added necessary documentation (if appropriate)
+## Highlight
+
+<!-- Optional. Use only for an especially important change. -->
+
+## Usage example
+
+<!-- Optional runnable or illustrative Markdown. Fenced code blocks are supported. -->
+
+## Migration
+
+<!-- Optional concrete upgrade instructions. -->
+
+## Breaking change
+
+<!-- Optional user-facing explanation. Keep BREAKING CHANGE: in the commit/title for versioning. -->
