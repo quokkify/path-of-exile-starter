@@ -1,8 +1,11 @@
 subprojects {
     tasks.withType(Test).configureEach {
+        def allureResults = layout.buildDirectory.dir('allure-results')
         useTestNG {
             listeners << 'io.qameta.allure.testng.AllureTestNg'
         }
+        systemProperty 'allure.results.directory', allureResults.get().asFile.absolutePath
+        outputs.dir(allureResults).withPropertyName('allureResults')
         jvmArgs = ["-ea", "-Xmx512m", "-javaagent:${configurations.agent.singleFile}"]
         systemProperties['file.encoding'] = encoding
 
