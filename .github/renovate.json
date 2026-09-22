@@ -1,13 +1,14 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
+    "github>quokkify/renovate-presets//presets/base",
+    "github>quokkify/renovate-presets//presets/github-actions/default",
     "github>quokkify/renovate-presets//presets/gradle/default",
-    "github>quokkify/renovate-presets//presets/docker/default",
-    "github>quokkify/renovate-presets//presets/github-actions/default"
+    "github>quokkify/renovate-presets//presets/docker/default"
   ],
   "packageRules": [
     {
-      "description": "Pin mariadb below 11.3 (project Docker compatibility constraint)",
+      "description": "Keep MariaDB compatible with the current project schema and runtime",
       "matchManagers": ["docker-compose", "dockerfile"],
       "matchPackageNames": ["mariadb"],
       "allowedVersions": "<11.3"

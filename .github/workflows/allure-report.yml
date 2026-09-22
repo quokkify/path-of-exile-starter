@@ -1,0 +1,278 @@
+name: Allure report
+
+on:
+  workflow_run:
+    workflows: [Validate]
+    types: [completed]
+
+permissions: {}
+
+concurrency:
+  group: allure-report-${{ github.event.workflow_run.head_repository.id }}-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: true
+
+jobs:
+  resolve:
+    name: Resolve trusted source run
+    if: >-
+      ${{
+        github.event.workflow_run.event == 'pull_request' &&
+        contains(
+          fromJSON('["success","failure","neutral","timed_out"]'),
+          github.event.workflow_run.conclusion
+        )
+      }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+    outputs:
+      ready: ${{ steps.resolve.outputs.ready }}
+      pr-number: ${{ steps.resolve.outputs.pr-number }}
+      fork-pr: ${{ steps.resolve.outputs.fork-pr }}
+      artifact_manifest: ${{ steps.resolve.outputs.artifact_manifest }}
+      materialize-root: ${{ steps.resolve.outputs.materialize-root }}
+      source-artifacts-directory: ${{ steps.resolve.outputs.source-artifacts-directory }}
+    steps:
+      - name: Resolve PR and validate source artifacts
+        id: resolve
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+            const expectedArtifacts = [
+              "allure-results-java-1",
+            ];
+            const artifactPrefix = "allure-results-";
+            const minimumArtifacts = 1;
+            const maximumArtifacts = 50;
+            const componentWorkflowPath = ".github/workflows/validate.yml";
+            const externalWorkflowPath = ".github/workflows/validate.yml";
+            const componentMode = true;
+            const externalMode = false;
+            const materializeRoot = componentMode ? ".allure-input/results" : ".allure-input/source-artifacts";
+            const sourceArtifactsDirectory = componentMode ? "" : ".allure-input/source-artifacts";
+            const skip = (message) => {
+              core.warning(message);
+              core.setOutput("ready", "false");
+            };
+            const componentRun = componentMode && run.path === componentWorkflowPath;
+            const externalRun = externalMode && run.path === externalWorkflowPath;
+            if (!componentRun && !externalRun) {
+              skip(`Ignore unexpected source workflow path: ${run.path}`);
+              return;
+            }
+            const headRepository = run.head_repository?.full_name;
+            if (!headRepository || !run.head_sha) {
+              skip("Source run has no live head repository or SHA.");
+              return;
+            }
+            const pulls = await github.paginate(github.rest.pulls.list, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open",
+              per_page: 100,
+            });
+            const matches = pulls.filter((pull) =>
+              pull.base?.repo?.full_name === `${context.repo.owner}/${context.repo.repo}` &&
+              pull.head?.repo?.full_name === headRepository &&
+              pull.head?.sha === run.head_sha
+            );
+            if (matches.length !== 1) {
+              skip(`Expected exactly one current open PR for source SHA; found ${matches.length}.`);
+              return;
+            }
+            const sourceRuns = await github.paginate(github.rest.actions.listWorkflowRuns, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: run.workflow_id,
+              event: "pull_request",
+              head_sha: run.head_sha,
+              per_page: 100,
+            });
+            const newestRunId = Math.max(...sourceRuns.map((candidate) => Number(candidate.id)));
+            if (!Number.isSafeInteger(newestRunId) || Number(run.id) !== newestRunId) {
+              skip("A newer source workflow run exists for this PR head; stale report suppressed.");
+              return;
+            }
+            const artifacts = await github.paginate(github.rest.actions.listWorkflowRunArtifacts, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: run.id,
+              per_page: 100,
+            });
+            const allureArtifacts = artifacts.filter((artifact) =>
+              artifact.name.startsWith(componentRun ? "allure-results-" : artifactPrefix)
+            );
+            const actualNames = allureArtifacts.map((artifact) => artifact.name).sort();
+            const expectedNames = [...expectedArtifacts].sort();
+            if (componentRun && JSON.stringify(actualNames) !== JSON.stringify(expectedNames)) {
+              core.setFailed(`Allure artifact contract mismatch. Expected ${expectedNames.join(", ")}; received ${actualNames.join(", ") || "none"}.`);
+              return;
+            }
+            if (externalRun && actualNames.length === 0) {
+              skip("No external Allure artifacts found; report generation skipped.");
+              return;
+            }
+            if (externalRun && (actualNames.length < minimumArtifacts || actualNames.length > maximumArtifacts ||
+                new Set(actualNames).size !== actualNames.length)) {
+              core.setFailed(`External Allure artifact contract mismatch. Expected ${minimumArtifacts}-${maximumArtifacts} unique artifacts with prefix ${artifactPrefix}; received ${actualNames.length}.`);
+              return;
+            }
+            if (allureArtifacts.some((artifact) => artifact.expired)) {
+              core.setFailed("One or more required Allure artifacts have expired.");
+              return;
+            }
+            const compressedBytes = allureArtifacts.reduce(
+              (total, artifact) => total + Number(artifact.size_in_bytes || 0),
+              0,
+            );
+            if (compressedBytes > 262144000) {
+              core.setFailed(`Allure artifacts exceed the 250 MiB compressed limit: ${compressedBytes} bytes.`);
+              return;
+            }
+            core.setOutput("artifact_manifest", JSON.stringify(
+              componentRun ? expectedArtifacts.map((name) => {
+                const artifact = allureArtifacts.find((candidate) => candidate.name === name);
+                return { name, id: Number(artifact.id) };
+              }) : allureArtifacts.map((artifact) => ({
+                name: artifact.name,
+                id: Number(artifact.id),
+              }))
+            ));
+            core.setOutput("materialize-root", materializeRoot);
+            core.setOutput("source-artifacts-directory", sourceArtifactsDirectory);
+            const pull = matches[0];
+            core.setOutput("ready", "true");
+            core.setOutput("pr-number", String(pull.number));
+            const pagesUnsafe = pull.head.repo.full_name !== pull.base.repo.full_name ||
+              pull.user?.login === "dependabot[bot]";
+            core.setOutput("fork-pr", String(pagesUnsafe));
+
+  generate:
+    name: Generate unprivileged report
+    needs: resolve
+    if: ${{ needs.resolve.outputs.ready == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - name: Check out trusted report configuration
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Download, preflight, and merge Allure results
+        shell: bash
+        env:
+          ARTIFACT_MANIFEST: ${{ needs.resolve.outputs.artifact_manifest }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ARCHIVE_ROOT: ${{ runner.temp }}/allure-archives
+          OUTPUT_ROOT: ${{ runner.temp }}/allure-expanded
+          MATERIALIZE_ROOT: ${{ github.workspace }}/${{ needs.resolve.outputs.materialize-root }}
+        run: python .github/allure/safe_extract.py
+      - name: Build Allure report without write privileges
+        uses: quokkify/project-toolkit/actions/allure-report@v2.21.6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          results-directory: .allure-input/results
+          source-artifacts-directory: ${{ needs.resolve.outputs.source-artifacts-directory }}
+          report-directory: allure-report
+          config-file: .github/allure/allurerc.mjs
+          source-run-id: ${{ github.event.workflow_run.id }}
+          pages-url: ""
+          fork-pr: ${{ needs.resolve.outputs.fork-pr }}
+          comment-marker: "<!-- project-toolkit-allure-report -->"
+      - name: Upload generated Allure HTML
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: allure-report-${{ github.run_id }}
+          path: |
+            allure-report
+            allure-pr-comment.md
+          if-no-files-found: error
+          retention-days: 14
+
+  comment:
+    name: Publish trusted PR comment
+    needs: [resolve, generate]
+    if: ${{ needs.resolve.outputs.ready == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      pull-requests: write
+    steps:
+      - name: Download generated report and compact comment
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: allure-report-${{ github.run_id }}
+          path: .allure-generated
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.run_id }}
+      - name: Revalidate source freshness and update comment
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ needs.resolve.outputs.pr-number }}
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+            const prNumber = Number(process.env.PR_NUMBER);
+            const { data: pull } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+            });
+            if (pull.state !== "open" || pull.head?.sha !== run.head_sha ||
+                pull.head?.repo?.full_name !== run.head_repository?.full_name) {
+              core.warning("PR head changed; stale Allure comment suppressed.");
+              return;
+            }
+            const sourceRuns = await github.paginate(github.rest.actions.listWorkflowRuns, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: run.workflow_id,
+              event: "pull_request",
+              head_sha: run.head_sha,
+              per_page: 100,
+            });
+            if (Number(run.id) !== Math.max(...sourceRuns.map((candidate) => Number(candidate.id)))) {
+              core.warning("A newer source workflow run exists; stale Allure comment suppressed.");
+              return;
+            }
+            const marker = "<!-- project-toolkit-allure-report -->";
+            const body = require("fs").readFileSync(".allure-generated/allure-pr-comment.md", "utf8").trimEnd();
+            if ((body.match(new RegExp(marker, "g")) || []).length !== 1 || !body.endsWith(marker)) {
+              core.setFailed("Generated Allure comment must contain exactly one marker as its final line.");
+              return;
+            }
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              per_page: 100,
+            });
+            const existing = comments.find((comment) =>
+              comment.user?.login === "github-actions[bot]" && (comment.body || "").includes(marker)
+            );
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body,
+              });
+            }
