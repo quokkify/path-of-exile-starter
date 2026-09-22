@@ -1,6 +1,8 @@
 subprojects {
     tasks.withType(Test).configureEach {
-        useTestNG()
+        useTestNG {
+            listeners << 'io.qameta.allure.testng.AllureTestNg'
+        }
         jvmArgs = ["-ea", "-Xmx512m", "-javaagent:${configurations.agent.singleFile}"]
         systemProperties['file.encoding'] = encoding
 

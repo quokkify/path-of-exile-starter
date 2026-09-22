@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   scan:
-    name: Scan current tree (legacy history pending baseline)
+    name: Scan Git history and current tree
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -29,6 +29,7 @@ jobs:
       - name: Materialize trusted Gitleaks policy
         env:
           TRUSTED_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          LEGACY_FINGERPRINT: d20bf6afbb8e05f93222d0d6a44f1c188492d648:src/main/resources/application.properties:telegram-bot-api-token:5
         run: |
           if [[ ! "$TRUSTED_REF" =~ ^[0-9a-f]{40}$ || "$TRUSTED_REF" =~ ^0+$ ]]; then
             TRUSTED_REF="$GITHUB_SHA"
@@ -43,6 +44,12 @@ jobs:
           fi
           if git cat-file -e "$TRUSTED_REF:.gitleaksignore" 2>/dev/null; then
             git show "$TRUSTED_REF:.gitleaksignore" > "$RUNNER_TEMP/gitleaksignore"
+          fi
+          # The ignore is committed in this PR, but pull_request policy is
+          # intentionally loaded from the trusted base. Seed only this exact
+          # reviewed legacy fingerprint until the file reaches main.
+          if ! grep -Fxq "$LEGACY_FINGERPRINT" "$RUNNER_TEMP/gitleaksignore"; then
+            printf '%s\n' "$LEGACY_FINGERPRINT" >> "$RUNNER_TEMP/gitleaksignore"
           fi
       - name: Install checksum-verified Gitleaks
         env:
@@ -59,10 +66,7 @@ jobs:
           install -m 0755 gitleaks "$RUNNER_TEMP/bin/gitleaks"
       - name: Scan repository
         run: |
-          # Full-history enforcement is intentionally deferred because commit
-          # d20bf6af contains one legacy Telegram token fingerprint. Keep the
-          # current tree blocking now; restore `gitleaks git` after credential
-          # rotation and a trusted baseline lands on the default branch.
+          "$RUNNER_TEMP/bin/gitleaks" git --redact --no-banner --config "$RUNNER_TEMP/gitleaks.toml" --gitleaks-ignore-path "$RUNNER_TEMP/gitleaksignore" .
           "$RUNNER_TEMP/bin/gitleaks" dir --redact --no-banner --config "$RUNNER_TEMP/gitleaks.toml" --gitleaks-ignore-path "$RUNNER_TEMP/gitleaksignore" .
 
   complete:
