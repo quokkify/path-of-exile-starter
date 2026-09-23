@@ -9,7 +9,7 @@ ext {
     spring_web = '7.0.8'
     hibernate_orm = '7.4.1.Final'
     hibernate_validator = '9.1.0.Final'
-    mariadb = '3.5.8'
+    mariadb = '3.5.9'
     mockito = '5.23.0'
     assertJ = '3.27.7'
     testng = '7.12.0'
