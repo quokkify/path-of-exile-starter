@@ -19,7 +19,7 @@ ext {
     slf4j = '2.0.18'
     allure = '2.35.5'
     httpcore5 = '5.4.3'
-    restAssured = '6.0.0'
+    restAssured = '6.0.1'
     awaitility = '4.3.0'
     spotbugs_annotation = '4.10.4'
     mock_server_netty = '7.0.0'
