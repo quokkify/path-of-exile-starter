@@ -110,7 +110,7 @@ jobs:
           fi
 
   java:
-    name: Java (.)
+    name: Java
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
