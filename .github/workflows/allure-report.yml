@@ -43,7 +43,7 @@ jobs:
           script: |
             const run = context.payload.workflow_run;
             const expectedArtifacts = [
-              "allure-results-java-1",
+              "allure-results-java",
             ];
             const artifactPrefix = "allure-results-";
             const minimumArtifacts = 1;
@@ -178,7 +178,7 @@ jobs:
           MATERIALIZE_ROOT: ${{ github.workspace }}/${{ needs.resolve.outputs.materialize-root }}
         run: python .github/allure/safe_extract.py
       - name: Build Allure report without write privileges
-        uses: quokkify/project-toolkit/actions/allure-report@v2.21.6
+        uses: quokkify/project-toolkit/actions/allure-report@v2.22.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           results-directory: .allure-input/results

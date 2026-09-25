@@ -1,4 +1,4 @@
-_commit: v2.21.6
+_commit: v2.22.0
 _src_path: https://github.com/quokkify/project-toolkit.git
 allure_categories_file: ""
 allure_external_artifact_max_count: 50
@@ -12,6 +12,8 @@ codeql: true
 codeql_languages: []
 components:
   - path: .
+    id: java
+    name: Java
     type: java
 docker: false
 project_name: Path of Exile Starter
@@ -23,4 +25,4 @@ renovate_presets:
   - default
   - github-actions
   - java
-toolkit_version: v2.21.6
+toolkit_version: v2.22.0

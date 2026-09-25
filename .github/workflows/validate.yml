@@ -109,8 +109,8 @@ jobs:
             git diff --check "$BASE_SHA..$HEAD_SHA"
           fi
 
-  java-1:
-    name: java (.)
+  java:
+    name: Java (.)
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
@@ -129,11 +129,11 @@ jobs:
           persist-credentials: false
       - name: Set up Java and Gradle
         id: java
-        uses: quokkify/project-toolkit/actions/setup-java-gradle@v2.21.6
+        uses: quokkify/project-toolkit/actions/setup-java-gradle@v2.22.0
         with:
           java-version: "25"
       - name: Start integration-test services
-        uses: quokkify/project-toolkit/actions/compose-up@v2.21.6
+        uses: quokkify/project-toolkit/actions/compose-up@v2.22.0
         with:
           compose-files: |
             tools/docker/docker-compose.yml
@@ -145,12 +145,12 @@ jobs:
           wait-urls: http://localhost:1080/mockserver/dashboard
           timeout-seconds: "600"
       - name: Run Gradle checks
-        uses: quokkify/project-toolkit/actions/gradle-retry@v2.21.6
+        uses: quokkify/project-toolkit/actions/gradle-retry@v2.22.0
         with:
           command: ${{ steps.java.outputs.gradle-command }} check --no-parallel --no-daemon --console=plain
       - name: Publish JUnit summary
         if: ${{ always() }}
-        uses: quokkify/project-toolkit/actions/junit-step-summary@v2.21.6
+        uses: quokkify/project-toolkit/actions/junit-step-summary@v2.22.0
         with:
           junit-paths: "**/build/test-results/**/TEST-*.xml"
           title: Java test results
@@ -172,7 +172,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: allure-results-java-1
+          name: allure-results-java
           path: allure-results
           if-no-files-found: error
           retention-days: 14
@@ -186,7 +186,7 @@ jobs:
 
   validation-complete:
     name: Validation pipeline complete
-    needs: [template-contract, java-1]
+    needs: [template-contract, java]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -194,7 +194,7 @@ jobs:
       - name: Validate required jobs
         env:
           TEMPLATE_CONTRACT_RESULT: ${{ needs.template-contract.result }}
-          JAVA_RESULT: ${{ needs.java-1.result }}
+          JAVA_RESULT: ${{ needs.java.result }}
         run: |
           if [[ "$TEMPLATE_CONTRACT_RESULT" != "success" || "$JAVA_RESULT" != "success" ]]; then
             echo "Required validation jobs did not succeed: template=$TEMPLATE_CONTRACT_RESULT java=$JAVA_RESULT" >&2
