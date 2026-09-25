@@ -27,7 +27,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Python and Copier
-        uses: quokkify/project-toolkit/actions/setup-python@v2.21.6
+        uses: quokkify/project-toolkit/actions/setup-python@v2.22.0
         with:
           python-version: "3.14"
           package-manager: pip
@@ -68,6 +68,25 @@ jobs:
           git switch -C "$BRANCH"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          python - <<'PY'
+          from pathlib import Path
+          import yaml
+
+          answers = yaml.safe_load(Path('.copier-answers.yml').read_text())
+          components = answers.get('components') if isinstance(answers, dict) else None
+          missing = [
+              str(component.get('path', index))
+              for index, component in enumerate(components or [])
+              if isinstance(component, dict)
+              and ('id' not in component or 'name' not in component)
+          ]
+          if missing:
+              raise SystemExit(
+                  'Breaking component migration requires explicit id and name for: '
+                  + ', '.join(missing)
+              )
+          PY
 
           command=(copier update --trust --defaults --conflict=rej --skip-tasks --vcs-ref "$ref")
           if [[ "$ref" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
