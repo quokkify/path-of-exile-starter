@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.0.1](https://github.com/quokkify/path-of-exile-starter/compare/v1.0.0...v1.0.1) (2026-09-26)
+
+
+### Bug Fixes
+
+* **deps:** update checkstyle to v14 ([#1087](https://github.com/quokkify/path-of-exile-starter/issues/1087)) ([5746aef](https://github.com/quokkify/path-of-exile-starter/commit/5746aeff7a2613937dbe170b9a7d5022a5dc6456))
+* **deps:** update com.github.spotbugs:spotbugs-annotations to v4.10.4 ([#1081](https://github.com/quokkify/path-of-exile-starter/issues/1081)) ([45058a9](https://github.com/quokkify/path-of-exile-starter/commit/45058a9f58f2441dab7b0b1304a8ca809432b35f))
+* **deps:** update com.github.spotbugs:spotbugs-annotations to v4.10.4 ([#1088](https://github.com/quokkify/path-of-exile-starter/issues/1088)) ([1fc397a](https://github.com/quokkify/path-of-exile-starter/commit/1fc397a5c86cf57c3be174d54e3ae0f0360e8b6c))
+* **deps:** update io.netty:netty-all to v4.2.18.final ([#1090](https://github.com/quokkify/path-of-exile-starter/issues/1090)) ([4163af3](https://github.com/quokkify/path-of-exile-starter/commit/4163af3fd6f3d1066f3a39af216cc7555ceb66df))
+* **deps:** update io.projectreactor:reactor-core to v3.8.7 ([#1091](https://github.com/quokkify/path-of-exile-starter/issues/1091)) ([cc04162](https://github.com/quokkify/path-of-exile-starter/commit/cc041629d6e8ce21d0a1d2f94bcc7d978398f93b))
+* **deps:** update net.datafaker:datafaker to v2.7.0 ([#1085](https://github.com/quokkify/path-of-exile-starter/issues/1085)) ([9b5847e](https://github.com/quokkify/path-of-exile-starter/commit/9b5847edaacfc7f58c983410cee24b5179786d8f))
+* **deps:** update org.apache.httpcomponents.core5:httpcore5 to v5.4.3 [security] ([#1076](https://github.com/quokkify/path-of-exile-starter/issues/1076)) ([0889dd9](https://github.com/quokkify/path-of-exile-starter/commit/0889dd970e15477982ff23150426bc3dcb91aee7))
+* **deps:** update org.mariadb.jdbc:mariadb-java-client to v3.5.9 [security] ([#1077](https://github.com/quokkify/path-of-exile-starter/issues/1077)) ([e2e3493](https://github.com/quokkify/path-of-exile-starter/commit/e2e3493dd56919aa57129aedac3392f3d726e096))
+* **deps:** update org.telegram:telegrambots-springboot-webhook-starter to v10.3.0 ([#1089](https://github.com/quokkify/path-of-exile-starter/issues/1089)) ([331731e](https://github.com/quokkify/path-of-exile-starter/commit/331731eea0ddc1843cef6fe07900be7c658fc06e))
+* **deps:** update spring boot to v4.1.1 ([#1082](https://github.com/quokkify/path-of-exile-starter/issues/1082)) ([6954394](https://github.com/quokkify/path-of-exile-starter/commit/69543949b60b188c09b9787c1d4a6a1afcd9e90d))
+* **deps:** update spring core to v7.0.9 ([#1083](https://github.com/quokkify/path-of-exile-starter/issues/1083)) ([8712783](https://github.com/quokkify/path-of-exile-starter/commit/87127830399ebc99c28d1c337b3118cdc4bec2f1))
+* **deps:** update tools.jackson.core:jackson-databind to v3.2.1 [security] ([#1078](https://github.com/quokkify/path-of-exile-starter/issues/1078)) ([18c2fd8](https://github.com/quokkify/path-of-exile-starter/commit/18c2fd8c1a1a1c82ab37b09992e13cff2ec55ecc))
+
 ## 1.0.0 (2026-09-22)
 
 
