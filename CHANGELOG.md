@@ -2,6 +2,19 @@
 
 ## [1.0.1](https://github.com/quokkify/path-of-exile-starter/compare/v1.0.0...v1.0.1) (2026-09-26)
 
+<!-- project-toolkit:rich-block:start -->
+### 📦 Dependencies
+- update docker images ([#1040](https://github.com/quokkify/path-of-exile-starter/pull/1040)) ([f55a497](https://github.com/quokkify/path-of-exile-starter/commit/f55a49737234a246b7970aed5282f29a4d962555)) <!-- project-toolkit:rich-release-notes pr=1040 -->
+- update peaceiris/actions-gh-pages digest to 84c30a8 ([#1041](https://github.com/quokkify/path-of-exile-starter/pull/1041)) ([1655587](https://github.com/quokkify/path-of-exile-starter/commit/16555877094a17da5821d01819ff0493c75369c1)) <!-- project-toolkit:rich-release-notes pr=1041 -->
+- update gradle to v9.7.1 ([#1084](https://github.com/quokkify/path-of-exile-starter/pull/1084)) ([b1964f2](https://github.com/quokkify/path-of-exile-starter/commit/b1964f2a1b1d8d3bbd16e1ce204810a9c639955a)) <!-- project-toolkit:rich-release-notes pr=1084 -->
+- update flyway/flyway docker tag to v13 ([#1086](https://github.com/quokkify/path-of-exile-starter/pull/1086)) ([8739aac](https://github.com/quokkify/path-of-exile-starter/commit/8739aaceb9f0a8d40bc3875cb2389a59835dc768)) <!-- project-toolkit:rich-release-notes pr=1086 -->
+- update io.projectreactor.netty:reactor-netty to v1.3.7 ([#1092](https://github.com/quokkify/path-of-exile-starter/pull/1092)) ([dbc1051](https://github.com/quokkify/path-of-exile-starter/commit/dbc1051f97b436e124a2be7cc33996140746420c)) <!-- project-toolkit:rich-release-notes pr=1092 -->
+- update io.qameta.allure:allure-testng to v2.35.5 ([#1094](https://github.com/quokkify/path-of-exile-starter/pull/1094)) ([1e3b0e3](https://github.com/quokkify/path-of-exile-starter/commit/1e3b0e3e9b231d3ecbbfcb98472c69164f3e5408)) <!-- project-toolkit:rich-release-notes pr=1094 -->
+- update io.rest-assured:rest-assured to v6.0.1 ([#1095](https://github.com/quokkify/path-of-exile-starter/pull/1095)) ([1237261](https://github.com/quokkify/path-of-exile-starter/commit/123726155a8e54c5be3bda6b2cbd492bf76aaa19)) <!-- project-toolkit:rich-release-notes pr=1095 -->
+- update org.apache.httpcomponents.core5:httpcore5 to v5.4.4 ([#1096](https://github.com/quokkify/path-of-exile-starter/pull/1096)) ([e85c6e2](https://github.com/quokkify/path-of-exile-starter/commit/e85c6e28be9bed0ee6af07e2e244aa60dfaccb16)) <!-- project-toolkit:rich-release-notes pr=1096 -->
+- update org.hibernate.orm:hibernate-jcache to v7.4.10.final ([#1097](https://github.com/quokkify/path-of-exile-starter/pull/1097)) ([2228a04](https://github.com/quokkify/path-of-exile-starter/commit/2228a0477d695653ed61074abf79022fd1a6f859)) <!-- project-toolkit:rich-release-notes pr=1097 -->
+- update org.hibernate.validator:hibernate-validator to v9.1.4.final ([#1098](https://github.com/quokkify/path-of-exile-starter/pull/1098)) ([f48c341](https://github.com/quokkify/path-of-exile-starter/commit/f48c341c6f100296884e898286c3a43f723e094d)) <!-- project-toolkit:rich-release-notes pr=1098 -->
+<!-- project-toolkit:rich-block:end -->
 
 ### Bug Fixes
 
