@@ -1,5 +1,36 @@
 # Changelog
 
+## [1.0.1](https://github.com/quokkify/path-of-exile-starter/compare/v1.0.0...v1.0.1) (2026-09-26)
+
+<!-- project-toolkit:rich-block:start -->
+### 📦 Dependencies
+- update docker images ([#1040](https://github.com/quokkify/path-of-exile-starter/pull/1040)) ([f55a497](https://github.com/quokkify/path-of-exile-starter/commit/f55a49737234a246b7970aed5282f29a4d962555)) <!-- project-toolkit:rich-release-notes pr=1040 -->
+- update peaceiris/actions-gh-pages digest to 84c30a8 ([#1041](https://github.com/quokkify/path-of-exile-starter/pull/1041)) ([1655587](https://github.com/quokkify/path-of-exile-starter/commit/16555877094a17da5821d01819ff0493c75369c1)) <!-- project-toolkit:rich-release-notes pr=1041 -->
+- update gradle to v9.7.1 ([#1084](https://github.com/quokkify/path-of-exile-starter/pull/1084)) ([b1964f2](https://github.com/quokkify/path-of-exile-starter/commit/b1964f2a1b1d8d3bbd16e1ce204810a9c639955a)) <!-- project-toolkit:rich-release-notes pr=1084 -->
+- update flyway/flyway docker tag to v13 ([#1086](https://github.com/quokkify/path-of-exile-starter/pull/1086)) ([8739aac](https://github.com/quokkify/path-of-exile-starter/commit/8739aaceb9f0a8d40bc3875cb2389a59835dc768)) <!-- project-toolkit:rich-release-notes pr=1086 -->
+- update io.projectreactor.netty:reactor-netty to v1.3.7 ([#1092](https://github.com/quokkify/path-of-exile-starter/pull/1092)) ([dbc1051](https://github.com/quokkify/path-of-exile-starter/commit/dbc1051f97b436e124a2be7cc33996140746420c)) <!-- project-toolkit:rich-release-notes pr=1092 -->
+- update io.qameta.allure:allure-testng to v2.35.5 ([#1094](https://github.com/quokkify/path-of-exile-starter/pull/1094)) ([1e3b0e3](https://github.com/quokkify/path-of-exile-starter/commit/1e3b0e3e9b231d3ecbbfcb98472c69164f3e5408)) <!-- project-toolkit:rich-release-notes pr=1094 -->
+- update io.rest-assured:rest-assured to v6.0.1 ([#1095](https://github.com/quokkify/path-of-exile-starter/pull/1095)) ([1237261](https://github.com/quokkify/path-of-exile-starter/commit/123726155a8e54c5be3bda6b2cbd492bf76aaa19)) <!-- project-toolkit:rich-release-notes pr=1095 -->
+- update org.apache.httpcomponents.core5:httpcore5 to v5.4.4 ([#1096](https://github.com/quokkify/path-of-exile-starter/pull/1096)) ([e85c6e2](https://github.com/quokkify/path-of-exile-starter/commit/e85c6e28be9bed0ee6af07e2e244aa60dfaccb16)) <!-- project-toolkit:rich-release-notes pr=1096 -->
+- update org.hibernate.orm:hibernate-jcache to v7.4.10.final ([#1097](https://github.com/quokkify/path-of-exile-starter/pull/1097)) ([2228a04](https://github.com/quokkify/path-of-exile-starter/commit/2228a0477d695653ed61074abf79022fd1a6f859)) <!-- project-toolkit:rich-release-notes pr=1097 -->
+- update org.hibernate.validator:hibernate-validator to v9.1.4.final ([#1098](https://github.com/quokkify/path-of-exile-starter/pull/1098)) ([f48c341](https://github.com/quokkify/path-of-exile-starter/commit/f48c341c6f100296884e898286c3a43f723e094d)) <!-- project-toolkit:rich-release-notes pr=1098 -->
+<!-- project-toolkit:rich-block:end -->
+
+### Bug Fixes
+
+* **deps:** update checkstyle to v14 ([#1087](https://github.com/quokkify/path-of-exile-starter/issues/1087)) ([5746aef](https://github.com/quokkify/path-of-exile-starter/commit/5746aeff7a2613937dbe170b9a7d5022a5dc6456))
+* **deps:** update com.github.spotbugs:spotbugs-annotations to v4.10.4 ([#1081](https://github.com/quokkify/path-of-exile-starter/issues/1081)) ([45058a9](https://github.com/quokkify/path-of-exile-starter/commit/45058a9f58f2441dab7b0b1304a8ca809432b35f))
+* **deps:** update com.github.spotbugs:spotbugs-annotations to v4.10.4 ([#1088](https://github.com/quokkify/path-of-exile-starter/issues/1088)) ([1fc397a](https://github.com/quokkify/path-of-exile-starter/commit/1fc397a5c86cf57c3be174d54e3ae0f0360e8b6c))
+* **deps:** update io.netty:netty-all to v4.2.18.final ([#1090](https://github.com/quokkify/path-of-exile-starter/issues/1090)) ([4163af3](https://github.com/quokkify/path-of-exile-starter/commit/4163af3fd6f3d1066f3a39af216cc7555ceb66df))
+* **deps:** update io.projectreactor:reactor-core to v3.8.7 ([#1091](https://github.com/quokkify/path-of-exile-starter/issues/1091)) ([cc04162](https://github.com/quokkify/path-of-exile-starter/commit/cc041629d6e8ce21d0a1d2f94bcc7d978398f93b))
+* **deps:** update net.datafaker:datafaker to v2.7.0 ([#1085](https://github.com/quokkify/path-of-exile-starter/issues/1085)) ([9b5847e](https://github.com/quokkify/path-of-exile-starter/commit/9b5847edaacfc7f58c983410cee24b5179786d8f))
+* **deps:** update org.apache.httpcomponents.core5:httpcore5 to v5.4.3 [security] ([#1076](https://github.com/quokkify/path-of-exile-starter/issues/1076)) ([0889dd9](https://github.com/quokkify/path-of-exile-starter/commit/0889dd970e15477982ff23150426bc3dcb91aee7))
+* **deps:** update org.mariadb.jdbc:mariadb-java-client to v3.5.9 [security] ([#1077](https://github.com/quokkify/path-of-exile-starter/issues/1077)) ([e2e3493](https://github.com/quokkify/path-of-exile-starter/commit/e2e3493dd56919aa57129aedac3392f3d726e096))
+* **deps:** update org.telegram:telegrambots-springboot-webhook-starter to v10.3.0 ([#1089](https://github.com/quokkify/path-of-exile-starter/issues/1089)) ([331731e](https://github.com/quokkify/path-of-exile-starter/commit/331731eea0ddc1843cef6fe07900be7c658fc06e))
+* **deps:** update spring boot to v4.1.1 ([#1082](https://github.com/quokkify/path-of-exile-starter/issues/1082)) ([6954394](https://github.com/quokkify/path-of-exile-starter/commit/69543949b60b188c09b9787c1d4a6a1afcd9e90d))
+* **deps:** update spring core to v7.0.9 ([#1083](https://github.com/quokkify/path-of-exile-starter/issues/1083)) ([8712783](https://github.com/quokkify/path-of-exile-starter/commit/87127830399ebc99c28d1c337b3118cdc4bec2f1))
+* **deps:** update tools.jackson.core:jackson-databind to v3.2.1 [security] ([#1078](https://github.com/quokkify/path-of-exile-starter/issues/1078)) ([18c2fd8](https://github.com/quokkify/path-of-exile-starter/commit/18c2fd8c1a1a1c82ab37b09992e13cff2ec55ecc))
+
 ## 1.0.0 (2026-09-22)
 
 
