@@ -214,8 +214,22 @@ def enrich_changelog(changelog: str, prs: Iterable[Mapping[str, object]]) -> str
     return changelog[:start] + top + changelog[end:]
 
 
+def _insert_rich_block(body: str, block: str) -> str:
+    """Insert rich notes ahead of generated release sections when present."""
+    # Put user-authored context before Release Please's generated sections so
+    # Highlights, usage examples, and migration guidance are visible first.
+    first_section = re.search(r"(?m)^###[ \t]+", body)
+    if first_section:
+        return body[: first_section.start()] + block + "\n\n" + body[first_section.start() :]
+    delimiters = list(re.finditer(r"\n---\n", body))
+    if delimiters:
+        footer_delimiter = delimiters[-1]
+        return body[:footer_delimiter.start()] + "\n\n" + block + body[footer_delimiter.start():]
+    return body.rstrip() + "\n\n" + block + "\n"
+
+
 def enrich_release_body(body: str, rich_markdown: str) -> str:
-    """Replace this tool's rich body block while preserving Release Please text."""
+    """Replace this tool's body block while preserving all Release Please text."""
     block = f"{BLOCK_START}\n{rich_markdown}\n{BLOCK_END}" if rich_markdown else ""
     pattern = rf"{re.escape(BLOCK_START)}[\s\S]*?{re.escape(BLOCK_END)}"
     existing = re.search(pattern, body)
@@ -226,11 +240,7 @@ def enrich_release_body(body: str, rich_markdown: str) -> str:
         body = prefix + body[existing.end():]
     if not block:
         return body
-    delimiters = list(re.finditer(r"\n---\n", body))
-    if delimiters:
-        footer_delimiter = delimiters[-1]
-        return body[:footer_delimiter.start()] + "\n\n" + block + body[footer_delimiter.start():]
-    return body.rstrip() + "\n\n" + block + "\n"
+    return _insert_rich_block(body, block)
 
 
 def enrich_component_release_body(
@@ -261,10 +271,10 @@ def enrich_component_release_body(
         block = f"{BLOCK_START}\n{rich}\n{BLOCK_END}" if rich else ""
         block_pattern = rf"{re.escape(BLOCK_START)}[\s\S]*?{re.escape(BLOCK_END)}"
         if re.search(block_pattern, notes):
-            new_notes = re.sub(block_pattern, block, notes)
+            without_block = re.sub(block_pattern, "", notes)
+            new_notes = _insert_rich_block(without_block, block) if block else without_block
         elif block:
-            separator = "" if notes.endswith("\n\n") else ("\n" if notes.endswith("\n") else "\n\n")
-            new_notes = notes + separator + block + "\n"
+            new_notes = _insert_rich_block(notes, block)
         else:
             new_notes = notes
         updated = updated[: match.start("notes")] + new_notes + updated[match.end("notes") :]

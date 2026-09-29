@@ -162,7 +162,7 @@ jobs:
       contents: read
     steps:
       - name: Check out trusted report configuration
-        uses: quokkify/project-toolkit/actions/checkout@v2.23.2
+        uses: quokkify/project-toolkit/actions/checkout@v2.23.5
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
@@ -178,7 +178,7 @@ jobs:
           MATERIALIZE_ROOT: ${{ github.workspace }}/${{ needs.resolve.outputs.materialize-root }}
         run: python .github/allure/safe_extract.py
       - name: Build Allure report without write privileges
-        uses: quokkify/project-toolkit/actions/allure-report@v2.23.2
+        uses: quokkify/project-toolkit/actions/allure-report@v2.23.5
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           results-directory: .allure-input/results
