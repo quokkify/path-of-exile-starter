@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       template-ref:
-        description: Optional project-toolkit ref; empty uses the latest released tag.
+        description: Optional ci-kit ref; empty uses the latest released tag.
         type: string
         required: false
 
@@ -22,12 +22,12 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Check out full repository history
-        uses: quokkify/project-toolkit/actions/checkout@v2.25.0
+        uses: quokkify/ci-kit/actions/checkout@v3.0.0
         with:
           fetch-depth: 0
 
       - name: Set up Python and Copier
-        uses: quokkify/project-toolkit/actions/setup-python@v2.25.0
+        uses: quokkify/ci-kit/actions/setup-python@v3.0.0
         with:
           python-version: "3.14"
           package-manager: pip
@@ -44,7 +44,7 @@ jobs:
           set -euo pipefail
           ref="${TEMPLATE_REF:-}"
           if [[ -z "$ref" ]]; then
-            ref="$(gh release view --repo quokkify/project-toolkit --json tagName --jq .tagName)"
+            ref="$(gh release view --repo quokkify/ci-kit --json tagName --jq .tagName)"
           fi
 
           # Manual refs are an explicit trust boundary: only published, stable,
@@ -53,7 +53,7 @@ jobs:
             printf 'Refused template ref %s: only exact SemVer release tags are allowed.\n' "$ref" >&2
             exit 1
           fi
-          release_json="$(gh release view "$ref" --repo quokkify/project-toolkit --json tagName,publishedAt,isDraft,isPrerelease)"
+          release_json="$(gh release view "$ref" --repo quokkify/ci-kit --json tagName,publishedAt,isDraft,isPrerelease)"
           if ! jq -e --arg expected "$ref" '
             .tagName == $expected and
             (.publishedAt | type == "string" and length > 0) and
@@ -63,7 +63,7 @@ jobs:
             printf 'Refused template ref %s: it is not an exact published stable release tag.\n' "$ref" >&2
             exit 1
           fi
-          echo "Updating to project-toolkit $ref"
+          echo "Updating to ci-kit $ref"
 
           git switch -C "$BRANCH"
           git config user.name "github-actions[bot]"
@@ -114,12 +114,12 @@ jobs:
           if [[ -f "$helper" ]]; then
             template_helper="$(mktemp)"
             trap 'rm -f "$template_helper"' EXIT
-            git fetch --quiet --depth=1 https://github.com/quokkify/project-toolkit.git \
+            git fetch --quiet --depth=1 https://github.com/quokkify/ci-kit.git \
               "refs/tags/$ref"
-            git show "FETCH_HEAD:templates/project/template/.github/scripts/enrich_release_notes.py.jinja" \
+            git show "FETCH_HEAD:template/.github/scripts/enrich_release_notes.py.jinja" \
               > "$template_helper"
             if ! cmp -s "$template_helper" "$helper"; then
-              printf 'Refusing template update: %s differs from project-toolkit %s. Reconcile this project-owned/customized helper with the template, then rerun.\n' "$helper" "$ref" >&2
+              printf 'Refusing template update: %s differs from ci-kit %s. Reconcile this project-owned/customized helper with the template, then rerun.\n' "$helper" "$ref" >&2
               exit 1
             fi
           fi

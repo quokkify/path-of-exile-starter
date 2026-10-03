@@ -20,7 +20,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Check out repository
-        uses: quokkify/project-toolkit/actions/checkout@v2.25.0
+        uses: quokkify/ci-kit/actions/checkout@v3.0.0
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -56,7 +56,11 @@ jobs:
           if answers.get("allure_report") and any(not path.is_file() for path in allure_paths):
               raise SystemExit("allure_report=true requires its generated workflow, config, and bounded extractor")
           components = answers.get("components")
-          if answers.get("allure_report") and not components:
+          allure_source = answers.get("allure_source") or "auto"
+          allure_mode = allure_source if allure_source in ("component", "external") else ("component" if components else "external")
+          if answers.get("allure_report") and allure_mode == "component" and not components:
+              raise SystemExit("allure_source=component requires at least one component")
+          if answers.get("allure_report") and allure_mode == "external":
               source_path = Path(str(answers.get("allure_external_workflow_path", "")))
               if not source_path.is_file():
                   raise SystemExit("external Allure reporting requires its configured source workflow")
@@ -76,7 +80,7 @@ jobs:
               text = path.read_text()
               yaml.safe_load(text)
               for line in text.splitlines():
-                  marker = "uses: quokkify/project-toolkit/"
+                  marker = "uses: quokkify/ci-kit/"
                   if line.lstrip().startswith(marker):
                       reference = line.split("@", 1)[1].split()[0]
                       comment = line.partition("#")[2].strip()
@@ -129,11 +133,11 @@ jobs:
           persist-credentials: false
       - name: Set up Java and Gradle
         id: java
-        uses: quokkify/project-toolkit/actions/setup-java-gradle@v2.25.0
+        uses: quokkify/ci-kit/actions/setup-java-gradle@v3.0.0
         with:
           java-version: "25"
       - name: Start integration-test services
-        uses: quokkify/project-toolkit/actions/compose-up@v2.25.0
+        uses: quokkify/ci-kit/actions/compose-up@v3.0.0
         with:
           compose-files: |
             tools/docker/docker-compose.yml
@@ -145,12 +149,12 @@ jobs:
           wait-urls: http://localhost:1080/mockserver/dashboard
           timeout-seconds: "600"
       - name: Run Gradle checks
-        uses: quokkify/project-toolkit/actions/gradle-retry@v2.25.0
+        uses: quokkify/ci-kit/actions/gradle-retry@v3.0.0
         with:
           command: ${{ steps.java.outputs.gradle-command }} check --no-parallel --no-daemon --console=plain
       - name: Publish JUnit summary
         if: ${{ always() }}
-        uses: quokkify/project-toolkit/actions/junit-step-summary@v2.25.0
+        uses: quokkify/ci-kit/actions/junit-step-summary@v3.0.0
         with:
           junit-paths: "**/build/test-results/**/TEST-*.xml"
           title: Java test results

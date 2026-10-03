@@ -224,7 +224,11 @@ def _insert_rich_block(body: str, block: str) -> str:
     delimiters = list(re.finditer(r"\n---\n", body))
     if delimiters:
         footer_delimiter = delimiters[-1]
-        return body[:footer_delimiter.start()] + "\n\n" + block + body[footer_delimiter.start():]
+        # Normalize the machine-owned spacing before a separator insertion.
+        # Unlike heading insertion, this branch adds leading blank lines; a
+        # removed block must not make those accumulate on subsequent reruns.
+        prefix = body[:footer_delimiter.start()].rstrip("\n")
+        return prefix + "\n\n" + block + body[footer_delimiter.start():]
     return body.rstrip() + "\n\n" + block + "\n"
 
 
@@ -271,7 +275,10 @@ def enrich_component_release_body(
         block = f"{BLOCK_START}\n{rich}\n{BLOCK_END}" if rich else ""
         block_pattern = rf"{re.escape(BLOCK_START)}[\s\S]*?{re.escape(BLOCK_END)}"
         if re.search(block_pattern, notes):
-            without_block = re.sub(block_pattern, "", notes)
+            # The inserter owns the two newlines after its block. Remove those
+            # with the block so reruns do not accumulate blank lines ahead of
+            # the generated section (including migrated component histories).
+            without_block = re.sub(block_pattern + r"(?:\n\n)?", "", notes)
             new_notes = _insert_rich_block(without_block, block) if block else without_block
         elif block:
             new_notes = _insert_rich_block(notes, block)
