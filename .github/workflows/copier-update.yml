@@ -22,12 +22,12 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Check out full repository history
-        uses: quokkify/project-toolkit/actions/checkout@v2.23.5
+        uses: quokkify/project-toolkit/actions/checkout@v2.24.0
         with:
           fetch-depth: 0
 
       - name: Set up Python and Copier
-        uses: quokkify/project-toolkit/actions/setup-python@v2.23.5
+        uses: quokkify/project-toolkit/actions/setup-python@v2.24.0
         with:
           python-version: "3.14"
           package-manager: pip
