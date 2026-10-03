@@ -16,7 +16,7 @@ ext {
     faker = '2.7.0'
     jaxb = '2.3.1'
     aeonbits = "1.0.12"
-    slf4j = '2.0.18'
+    slf4j = '2.0.20'
     allure = '2.35.5'
     httpcore5 = '5.4.4'
     restAssured = '6.0.1'
