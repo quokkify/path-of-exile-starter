@@ -8,13 +8,13 @@ on:
 permissions: {}
 
 concurrency:
-  group: allure-report-${{ github.event.workflow_run.head_repository.id }}-${{ github.event.workflow_run.head_branch }}
+  group: allure-report-${{ github.event.workflow_run.workflow_id }}-${{ github.event.workflow_run.head_repository.id }}-${{ github.event.workflow_run.head_branch }}
   cancel-in-progress: true
 
 jobs:
   report:
     name: Generate and comment trusted Allure report
-    uses: quokkify/project-toolkit/.github/workflows/allure-publisher-core.yml@v2.24.0
+    uses: quokkify/project-toolkit/.github/workflows/allure-publisher-core.yml@v2.25.0
     permissions:
       actions: read
       contents: read
@@ -31,4 +31,5 @@ jobs:
       categories-file: ""
       publish-pages: false
       managed-pages-layout: true
+      history-path: allure-history/history.jsonl
       pages-url: ""

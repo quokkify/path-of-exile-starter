@@ -1,6 +1,8 @@
 export default {
   name: "Path of Exile Starter",
   output: "./allure-report",
+  historyPath: "./allure-history/history.jsonl",
+  historyLimit: 20,
   plugins: {
     awesome: {
       options: {

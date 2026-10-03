@@ -295,6 +295,18 @@ def enrich_component_release_body(
     return updated
 
 
+def release_body_components(body: str) -> set[str]:
+    """Return components actually present in a Release Please manifest PR."""
+    return {
+        match.group("component")
+        for match in re.finditer(
+            r"(?m)^<details><summary>(?P<component>.+?): "
+            r"[0-9]+\.[0-9]+\.[0-9]+[^<]*</summary>$",
+            body,
+        )
+    }
+
+
 def _safe_relative_path(value: str, *, label: str) -> Path:
     """Return a repository-relative path that cannot escape the checkout."""
     if not value or not SAFE_PATH_PATTERN.fullmatch(value):
@@ -508,6 +520,7 @@ def prepare_release_enrichment(
     )
     _run_gh(["pr", "checkout", str(release_number), "--repo", repository, "--force"])
 
+    release_body = str(release.get("body") or "")
     release_targets = discover_release_targets(
         mode=mode,
         package_path=package_path,
@@ -515,6 +528,18 @@ def prepare_release_enrichment(
         manifest_file=manifest_file,
         config_backed_single=config_backed_single,
     )
+    multi_component = mode == "manifest" and len(release_targets) > 1
+    if multi_component:
+        active_components = release_body_components(release_body)
+        release_targets = [
+            (component, path)
+            for component, path in release_targets
+            if component in active_components
+        ]
+        if not release_targets:
+            raise EnrichmentError(
+                "multi-component release body has no canonical component details"
+            )
     changelog_paths = sorted(
         {path for _, path in release_targets}, key=lambda path: path.as_posix()
     )
@@ -565,8 +590,7 @@ def prepare_release_enrichment(
                 int(number) for number in _rich_numbers(updated[top[0][0] : top[0][1]])
             )
 
-    release_body = str(release.get("body") or "")
-    if mode == "manifest" and len(release_targets) > 1:
+    if multi_component:
         rich_by_component: dict[str, str] = {}
         for component, path in release_targets:
             if component is None:
