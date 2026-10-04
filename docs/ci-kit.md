@@ -1,23 +1,23 @@
 # ci-kit onboarding
 
-This repository is managed by the [`quokkify/ci-kit`](https://github.com/quokkify/ci-kit) Copier template at `v3.0.0`. This file is toolkit-owned: `copier update` rewrites it, so keep project notes elsewhere.
+This repository is managed by the [`quokkify/ci-kit`](https://github.com/quokkify/ci-kit) Copier template at `v3.0.1`. This file is toolkit-owned: `copier update` rewrites it, so keep project notes elsewhere.
 
 ## What this project received
 
-| Path | Purpose | Owner |
-| --- | --- | --- |
-| `.copier-answers.yml` | Copier answers; required for `copier update` | toolkit |
-| `.github/workflows/validate.yml` | `Validate` workflow: Java (`.`) | toolkit |
-| `.github/workflows/copier-update.yml` | Template update automation | toolkit |
-| `.github/pull_request_template.md` | Pull request template | project |
-| `README.md` | Starter README | project |
-| `docs/ci-kit.md` | This guide | toolkit |
-| `.github/workflows/codeql.yml` | CodeQL code scanning | toolkit |
-| `.github/workflows/gitleaks.yml` | Secret scanning | toolkit |
-| `.github/workflows/allure-report.yml`, `.github/allure/` | Allure 3 pull-request report | toolkit |
-| `.github/workflows/release.yml`, `.github/scripts/` | Release Please (single) | toolkit |
-| `.github/release-please/` | Release Please config and manifest | project |
-| `.github/renovate.json` | Renovate config extending `quokkify/renovate-presets` | project |
+| Path                                                     | Purpose                                               | Owner   |
+| -------------------------------------------------------- | ----------------------------------------------------- | ------- |
+| `.copier-answers.yml`                                    | Copier answers; required for `copier update`          | toolkit |
+| `.github/workflows/validate.yml`                         | `Validate` workflow: Java (`.`)                       | toolkit |
+| `.github/workflows/copier-update.yml`                    | Template update automation                            | toolkit |
+| `.github/pull_request_template.md`                       | Pull request template                                 | project |
+| `README.md`                                              | Starter README                                        | project |
+| `docs/ci-kit.md`                                         | This guide                                            | toolkit |
+| `.github/workflows/codeql.yml`                           | CodeQL code scanning                                  | toolkit |
+| `.github/workflows/gitleaks.yml`                         | Secret scanning                                       | toolkit |
+| `.github/workflows/allure-report.yml`, `.github/allure/` | Allure 3 pull-request report                          | toolkit |
+| `.github/workflows/release.yml`, `.github/scripts/`      | Release Please (single)                               | toolkit |
+| `.github/release-please/`                                | Release Please config and manifest                    | project |
+| `.github/renovate.json`                                  | Renovate config extending `quokkify/renovate-presets` | project |
 
 Toolkit-owned files are replaced by `copier update`; change them in ci-kit, not here. Project-owned files are written once and never overwritten.
 

@@ -20,7 +20,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Check out repository
-        uses: quokkify/ci-kit/actions/checkout@v3.0.0
+        uses: quokkify/ci-kit/actions/checkout@v3.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -133,11 +133,11 @@ jobs:
           persist-credentials: false
       - name: Set up Java and Gradle
         id: java
-        uses: quokkify/ci-kit/actions/setup-java-gradle@v3.0.0
+        uses: quokkify/ci-kit/actions/setup-java-gradle@v3.0.1
         with:
           java-version: "25"
       - name: Start integration-test services
-        uses: quokkify/ci-kit/actions/compose-up@v3.0.0
+        uses: quokkify/ci-kit/actions/compose-up@v3.0.1
         with:
           compose-files: |
             tools/docker/docker-compose.yml
@@ -149,12 +149,12 @@ jobs:
           wait-urls: http://localhost:1080/mockserver/dashboard
           timeout-seconds: "600"
       - name: Run Gradle checks
-        uses: quokkify/ci-kit/actions/gradle-retry@v3.0.0
+        uses: quokkify/ci-kit/actions/gradle-retry@v3.0.1
         with:
           command: ${{ steps.java.outputs.gradle-command }} check --no-parallel --no-daemon --console=plain
       - name: Publish JUnit summary
         if: ${{ always() }}
-        uses: quokkify/ci-kit/actions/junit-step-summary@v3.0.0
+        uses: quokkify/ci-kit/actions/junit-step-summary@v3.0.1
         with:
           junit-paths: "**/build/test-results/**/TEST-*.xml"
           title: Java test results
