@@ -4,17 +4,15 @@ allure_categories_file: ""
 allure_external_artifact_max_count: 50
 allure_external_artifact_min_count: 1
 allure_external_artifact_prefix: allure-results-
-allure_external_workflow_name: Validate
-allure_external_workflow_path: .github/workflows/validate.yml
+allure_external_workflow_name: Tests
+allure_external_workflow_path: .github/workflows/test.yml
 allure_publish_pages: false
 allure_report: true
 codeql: true
-codeql_languages: []
-components:
-  - id: java
-    name: Java
-    path: .
-    type: java
+codeql_languages:
+  - actions
+  - java-kotlin
+components: []
 docker: false
 gitleaks: true
 project_name: Path of Exile Starter
@@ -27,4 +25,4 @@ renovate_presets:
   - github-actions
   - java
 toolkit_version: v3.0.1
-allure_source: auto
+allure_source: external

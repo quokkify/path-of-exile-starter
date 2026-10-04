@@ -2,7 +2,7 @@ name: Allure report
 
 on:
   workflow_run:
-    workflows: [Validate]
+    workflows: [Validate, "Tests"]
     types: [completed]
 
 permissions: {}
@@ -20,13 +20,13 @@ jobs:
       contents: read
       pull-requests: write
     with:
-      source-workflow: Validate
-      source-workflow-path: .github/workflows/validate.yml
-      artifact-prefix: allure-results-
-      artifact-mode: component
+      source-workflow: "Tests"
+      source-workflow-path: ".github/workflows/test.yml"
+      artifact-prefix: "allure-results-"
+      artifact-mode: external
       minimum-artifacts: 1
       maximum-artifacts: 50
-      skip-empty-artifacts: false
+      skip-empty-artifacts: true
       config-file: .github/allure/allurerc.mjs
       categories-file: ""
       publish-pages: false
