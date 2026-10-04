@@ -7,7 +7,7 @@ This repository is managed by the [`quokkify/ci-kit`](https://github.com/quokkif
 | Path                                                     | Purpose                                               | Owner   |
 | -------------------------------------------------------- | ----------------------------------------------------- | ------- |
 | `.copier-answers.yml`                                    | Copier answers; required for `copier update`          | toolkit |
-| `.github/workflows/validate.yml`                         | `Validate` workflow: Java (`.`)                       | toolkit |
+| `.github/workflows/validate.yml`                         | `Validate` workflow                                   | toolkit |
 | `.github/workflows/copier-update.yml`                    | Template update automation                            | toolkit |
 | `.github/pull_request_template.md`                       | Pull request template                                 | project |
 | `README.md`                                              | Starter README                                        | project |
@@ -24,7 +24,6 @@ Toolkit-owned files are replaced by `copier update`; change them in ci-kit, not 
 ## First-day checklist
 
 - [ ] `.copier-answers.yml` is committed.
-- [ ] Component paths in `.github/workflows/validate.yml` match the real directories.
 - [ ] Test runners write Allure results as described in the `README.md` Allure section.
 - [ ] Code scanning is available for this repository (GitHub Advanced Security for private repositories).
 - [ ] The Renovate GitHub App has access to this repository.
