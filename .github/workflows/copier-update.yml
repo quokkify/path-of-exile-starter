@@ -22,12 +22,12 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Check out full repository history
-        uses: quokkify/ci-kit/actions/checkout@v3.0.3
+        uses: quokkify/ci-kit/actions/checkout@v3.1.0
         with:
           fetch-depth: 0
 
       - name: Set up Python and Copier
-        uses: quokkify/ci-kit/actions/setup-python@v3.0.3
+        uses: quokkify/ci-kit/actions/setup-python@v3.1.0
         with:
           python-version: "3.14"
           package-manager: pip
