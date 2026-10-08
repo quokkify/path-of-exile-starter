@@ -14,7 +14,7 @@ concurrency:
 jobs:
   report:
     name: Generate and comment trusted Allure report
-    uses: quokkify/ci-kit/.github/workflows/allure-publisher-core.yml@v3.0.1
+    uses: quokkify/ci-kit/.github/workflows/allure-publisher-core.yml@v3.0.3
     permissions:
       actions: read
       contents: read
