@@ -7,7 +7,7 @@ ext {
     jakarta_el = '4.0.2'
     spring = '4.1.1'
     spring_web = '7.0.9'
-    hibernate_orm = '7.4.11.Final'
+    hibernate_orm = '7.4.12.Final'
     hibernate_validator = '9.1.4.Final'
     mariadb = '3.5.10'
     mockito = '5.24.0'
