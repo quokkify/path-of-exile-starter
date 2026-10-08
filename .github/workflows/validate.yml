@@ -20,7 +20,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Check out repository
-        uses: quokkify/ci-kit/actions/checkout@v3.0.1
+        uses: quokkify/ci-kit/actions/checkout@v3.0.3
         with:
           fetch-depth: 0
           persist-credentials: false

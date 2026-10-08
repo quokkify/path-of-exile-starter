@@ -69,7 +69,13 @@ def extract_rich_sections(body: str) -> dict[str, str]:
             continue
         if current is not None:
             result[current] += line + "\n"
-    return {key: value.strip() for key, value in result.items() if _without_comments(value.splitlines())}
+    # Release Please commits these sections into CHANGELOG.md, and a trailing space
+    # pasted from a log or used as a Markdown line break would fail `git diff --check`.
+    return {
+        key: "\n".join(line.rstrip() for line in value.strip().splitlines())
+        for key, value in result.items()
+        if _without_comments(value.splitlines())
+    }
 
 
 def _version_ranges(changelog: str) -> list[tuple[int, int]]:
@@ -150,8 +156,22 @@ def _remove_legacy_block(top: str) -> str:
     return "".join(output)
 
 
+def _attribution(number: int, title: str) -> str:
+    """Label one PR inside a shared section from its Conventional Commit title."""
+    title = " ".join(title.split()).replace("<", "&lt;").replace(">", "&gt;")
+    if not title:
+        return f"#{number}"
+    # type(scope)!: subject
+    match = re.fullmatch(r"\w+(?:\((?P<scope>[^)]+)\))?!?:\s*(?P<subject>.+)", title)
+    if match is None:
+        return f"{title} (#{number})"
+    scope = match.group("scope")
+    subject = match.group("subject")
+    return f"**{scope}:** {subject} (#{number})" if scope else f"{subject} (#{number})"
+
+
 def _render_entries(prs: Iterable[Mapping[str, object]], excluded: set[str]) -> str:
-    entries: list[tuple[int, dict[str, str]]] = []
+    entries: list[tuple[int, str, dict[str, str]]] = []
     seen: set[str] = set()
     for pr in prs:
         number = str(pr.get("number", "")).strip()
@@ -177,15 +197,20 @@ def _render_entries(prs: Iterable[Mapping[str, object]], excluded: set[str]) -> 
             for value in untrusted
             for marker in reserved
         ):
-            entries.append((int(number), sections))
+            entries.append((int(number), title, sections))
     entries.sort(key=lambda item: item[0])
+    attributed = len(entries) > 1
     blocks: list[str] = []
-    for number_value, sections in entries:
-        number = str(number_value)
-        blocks.append(MARKER.format(number=number))
-        for key, heading in RICH_HEADINGS.items():
-            if key in sections:
-                blocks.extend((f"### {heading}", sections[key], ""))
+    for key, heading in RICH_HEADINGS.items():
+        items = [(number, title, sections[key]) for number, title, sections in entries if key in sections]
+        if not items:
+            continue
+        blocks.append(f"### {heading}")
+        for number, title, text in items:
+            blocks.append(MARKER.format(number=number))
+            if attributed:
+                blocks.append(f"#### {_attribution(number, title)}")
+            blocks.extend((text, ""))
     return "\n".join(blocks).rstrip()
 
 
