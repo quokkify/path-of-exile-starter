@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.1](https://github.com/quokkify/path-of-exile-starter/compare/v0.2.0...v0.2.1) (2026-10-10)
+
+
+### 📦 Dependencies
+
+* **gradle:** update io.netty:netty-all to v4.2.19.final ([#1125](https://github.com/quokkify/path-of-exile-starter/issues/1125)) ([918bd8e](https://github.com/quokkify/path-of-exile-starter/commit/918bd8ecc1b2838cc0484f602362ee26087baa2b))
+* **gradle:** update org.hibernate.orm:hibernate-jcache to v7.4.12.final ([#1122](https://github.com/quokkify/path-of-exile-starter/issues/1122)) ([0ac4b14](https://github.com/quokkify/path-of-exile-starter/commit/0ac4b14aff70cb1fd40536cf3dd0d81e64a28597))
+
 ## [0.2.0](https://github.com/quokkify/path-of-exile-starter/compare/v0.1.0...v0.2.0) (2026-09-29)
 
 
