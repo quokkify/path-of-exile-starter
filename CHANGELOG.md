@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.2.1](https://github.com/quokkify/path-of-exile-starter/compare/v0.2.0...v0.2.1) (2026-10-12)
+
+
+### 📦 Dependencies
+
+* **docker-compose:** update flyway/flyway docker tag to v13.10.0 ([#1127](https://github.com/quokkify/path-of-exile-starter/issues/1127)) ([626b13d](https://github.com/quokkify/path-of-exile-starter/commit/626b13dbefed709bdaf4609d03711dcf4f08f675))
+* **gradle-wrapper:** update gradle to v9.8.1 ([#1126](https://github.com/quokkify/path-of-exile-starter/issues/1126)) ([578658f](https://github.com/quokkify/path-of-exile-starter/commit/578658f6df52580b9bcd3619e222be25d929a6af))
+* **gradle:** update io.netty:netty-all to v4.2.19.final ([#1125](https://github.com/quokkify/path-of-exile-starter/issues/1125)) ([918bd8e](https://github.com/quokkify/path-of-exile-starter/commit/918bd8ecc1b2838cc0484f602362ee26087baa2b))
+* **gradle:** update org.hibernate.orm:hibernate-jcache to v7.4.12.final ([#1122](https://github.com/quokkify/path-of-exile-starter/issues/1122)) ([0ac4b14](https://github.com/quokkify/path-of-exile-starter/commit/0ac4b14aff70cb1fd40536cf3dd0d81e64a28597))
+
 ## [0.2.0](https://github.com/quokkify/path-of-exile-starter/compare/v0.1.0...v0.2.0) (2026-09-29)
 
 
