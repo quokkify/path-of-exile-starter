@@ -589,15 +589,15 @@
 
 
 <h1 id="ci-kit-onboarding">ci-kit onboarding<a class="headerlink" href="#ci-kit-onboarding" title="Permanent link">&para;</a></h1>
-<p>This repository is managed by <a href="https://github.com/quokkify/ci-kit"><code>quokkify/ci-kit</code></a> at <code>v4.0.1</code>. This file is toolkit-owned: <code>ci-kit update</code> rewrites it, so keep project notes elsewhere.</p>
+<p>This repository is managed by <a href="https://github.com/quokkify/ci-kit"><code>quokkify/ci-kit</code></a> at <code>v4.1.0</code>. This file is toolkit-owned: <code>ci-kit update</code> rewrites it, so keep project notes elsewhere.</p>
 <h2 id="modules">Modules<a class="headerlink" href="#modules" title="Permanent link">&para;</a></h2>
 <p>ci-kit is installed as a set of modules. Every module has its own Copier answers file, <code>.copier-answers.&lt;module&gt;.yml</code>, and a declaration, <code>.ci/modules/&lt;module&gt;.yml</code>. A module owns the files it renders: they are replaced on every update, so change them in ci-kit, not here. Starter files (<code>README.md</code>, <code>.github/pull_request_template.md</code>, and the starters of other modules) are written once and then belong to the project.</p>
-<p><code>core</code> is always installed. It owns the <code>Validate</code> workflow, the template update workflow <code>.github/workflows/copier-update.yml</code>, and this guide. The other modules, the files each one renders, and their questions are listed in <a href="https://github.com/quokkify/ci-kit/blob/v4.0.1/docs/modules.md"><code>docs/modules.md</code></a>.</p>
+<p><code>core</code> is always installed. It owns the <code>Validate</code> workflow, the template update workflow <code>.github/workflows/copier-update.yml</code>, and this guide. The other modules, the files each one renders, and their questions are listed in <a href="https://github.com/quokkify/ci-kit/blob/v4.1.0/docs/modules.md"><code>docs/modules.md</code></a>.</p>
 <h2 id="check-the-installation">Check the installation<a class="headerlink" href="#check-the-installation" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"git+https://github.com/quokkify/ci-kit@v4.0.1"</span>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"git+https://github.com/quokkify/ci-kit@v4.1.0"</span>
 ci-kit<span class="w"> </span>doctor<span class="w"> </span>--repo<span class="w"> </span>.
 </code></pre></div>
-<p><code>ci-kit doctor</code> reports missing or conflicting answers files, invalid module declarations, and files that differ from the template render. Each finding names an error code with a runbook in <a href="https://github.com/quokkify/ci-kit/tree/v4.0.1/docs/errors"><code>docs/errors/</code></a>.</p>
+<p><code>ci-kit doctor</code> reports missing or conflicting answers files, invalid module declarations, and files that differ from the template render. Each finding names an error code with a runbook in <a href="https://github.com/quokkify/ci-kit/tree/v4.1.0/docs/errors"><code>docs/errors/</code></a>.</p>
 <h2 id="update-to-a-newer-toolkit-release">Update to a newer toolkit release<a class="headerlink" href="#update-to-a-newer-toolkit-release" title="Permanent link">&para;</a></h2>
 <p>Run the <code>Update project template</code> workflow; it updates every module to the latest release and pushes a branch for review. To update by hand:</p>
 <div class="highlight"><pre><span></span><code>git<span class="w"> </span>switch<span class="w"> </span>main<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>git<span class="w"> </span>pull<span class="w"> </span>--ff-only
@@ -610,9 +610,9 @@ gh<span class="w"> </span>pr<span class="w"> </span>create<span class="w"> </spa
 </code></pre></div>
 <p><code>ci-kit update</code> commits one update per module and stops on the first Copier conflict.</p>
 <h2 id="add-a-module">Add a module<a class="headerlink" href="#add-a-module" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>copier<span class="w"> </span>copy<span class="w"> </span>--trust<span class="w"> </span>--vcs-ref<span class="w"> </span>v4.0.1<span class="w"> </span>-a<span class="w"> </span>.copier-answers.&lt;module&gt;.yml<span class="w"> </span>-d<span class="w"> </span><span class="nv">module</span><span class="o">=</span>&lt;module&gt;<span class="w"> </span>gh:quokkify/ci-kit<span class="w"> </span>.
+<div class="highlight"><pre><span></span><code>copier<span class="w"> </span>copy<span class="w"> </span>--trust<span class="w"> </span>--vcs-ref<span class="w"> </span>v4.1.0<span class="w"> </span>-a<span class="w"> </span>.copier-answers.&lt;module&gt;.yml<span class="w"> </span>-d<span class="w"> </span><span class="nv">module</span><span class="o">=</span>&lt;module&gt;<span class="w"> </span>gh:quokkify/ci-kit<span class="w"> </span>.
 </code></pre></div>
-<p>Change a module's answers by re-running <code>copier update -a .copier-answers.&lt;module&gt;.yml --data &lt;question&gt;=&lt;value&gt;</code>. Question names and allowed values are defined in <a href="https://github.com/quokkify/ci-kit/blob/v4.0.1/copier.yml"><code>copier.yml</code></a>.</p>
+<p>Change a module's answers by re-running <code>copier update -a .copier-answers.&lt;module&gt;.yml --data &lt;question&gt;=&lt;value&gt;</code>. Question names and allowed values are defined in <a href="https://github.com/quokkify/ci-kit/blob/v4.1.0/copier.yml"><code>copier.yml</code></a>.</p>
 
 
 
