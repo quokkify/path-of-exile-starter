@@ -1,4 +1,4 @@
-_commit: v4.0.1
+_commit: v4.1.0
 _src_path: https://github.com/quokkify/ci-kit.git
 codeql: true
 codeql_aggregate: true
@@ -10,4 +10,4 @@ gitleaks_aggregate: true
 gitleaks_job_name: Scan Git history and current tree
 gitleaks_scan: history
 module: security
-toolkit_version: v4.0.1
+toolkit_version: v4.1.0

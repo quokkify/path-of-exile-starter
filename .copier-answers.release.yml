@@ -1,5 +1,5 @@
-_commit: v4.0.1
+_commit: v4.1.0
 _src_path: https://github.com/quokkify/ci-kit.git
 module: release
 release_mode: single
-toolkit_version: v4.0.1
+toolkit_version: v4.1.0
