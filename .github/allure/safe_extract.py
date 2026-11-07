@@ -249,6 +249,9 @@ def main() -> None:
     layout = os.environ.get("MATERIALIZE_LAYOUT") or "merged"
     if layout not in {"merged", "per-artifact"}:
         fail(f"unsupported MATERIALIZE_LAYOUT: {layout}")
+    content = os.environ.get("MATERIALIZE_CONTENT") or "results"
+    if content not in {"results", "report"}:
+        fail(f"unsupported MATERIALIZE_CONTENT: {content}")
     if layout == "per-artifact" and (conflicts := names & RESERVED_ARTIFACT_NAMES):
         fail(f"artifact names conflict with the per-artifact layout: {', '.join(sorted(conflicts))}")
     fixture_archives = os.environ.get("ARTIFACT_ARCHIVE_DIR")
@@ -335,6 +338,19 @@ def main() -> None:
 
         if not entries:
             fail("required artifacts contained no regular files")
+        if materialize_root is not None and layout == "merged" and content == "results":
+            results = [relative for _, _, _, relative in entries if relative.name.endswith("-result.json")]
+            nested = sorted({relative.parent.as_posix() for relative in results if len(relative.parts) > 1})
+            if nested:
+                fail(
+                    "component artifacts hold *-result.json below the artifact root, where the report does not read them: "
+                    f"{', '.join(nested[:5])}. Set test_artifact_path to one results directory."
+                )
+            if not results:
+                fail(
+                    "component artifacts contain no *-result.json at the artifact root, so the report would be empty. "
+                    "Check that the test run produced results and that test_artifact_path points at one results directory."
+                )
         shutil.rmtree(output_root, ignore_errors=True)
         output_root.mkdir(parents=True)
         actual_bytes = 0

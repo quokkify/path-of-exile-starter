@@ -1,0 +1,27 @@
+name: PR contract
+
+# PR titles and the `## Release note` / `## Migration` sections become the
+# release notes. See "Pull request titles and release notes" in docs/ci-kit.md.
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+      - ready_for_review
+      - labeled
+      - unlabeled
+
+permissions: {}
+
+concurrency:
+  group: pr-contract-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    name: PR contract
+    uses: quokkify/ci-kit/.github/workflows/pr-contract.yml@v4.3.2
+    with:
+      enforce: false
