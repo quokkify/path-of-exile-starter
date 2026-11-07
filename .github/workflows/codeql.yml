@@ -21,7 +21,7 @@ jobs:
       actions: read
       contents: read
       security-events: write
-    uses: quokkify/ci-kit/.github/workflows/codeql-analysis.yml@v4.1.0
+    uses: quokkify/ci-kit/.github/workflows/codeql-analysis.yml@v4.3.2
     with:
       languages-override: '["actions", "java-kotlin"]'
 
