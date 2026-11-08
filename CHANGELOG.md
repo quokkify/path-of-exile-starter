@@ -2,18 +2,44 @@
 
 ## [0.2.1](https://github.com/quokkify/path-of-exile-starter/compare/v0.2.0...v0.2.1) (2026-11-08)
 
+<!-- project-toolkit:release-notes v2 -->
+**At a glance:** 1 fixed · 47 internal
 
-### 🐛 Bug Fixes
+### 🐛 Fixed
 
-* **ci:** attribute the Java Allure results to a module ([#1136](https://github.com/quokkify/path-of-exile-starter/issues/1136)) ([977ad0d](https://github.com/quokkify/path-of-exile-starter/commit/977ad0d56d33c18f6cf7590a3563123d87c66451))
+- **ci:** attribute the Java Allure results to a module ([#1136](https://github.com/quokkify/path-of-exile-starter/pull/1136))
 
+<details><summary>Internal changes (47 PRs)</summary>
 
-### 📦 Dependencies
+**Dependencies**
 
-* **docker-compose:** update flyway/flyway docker tag to v13.10.0 ([#1127](https://github.com/quokkify/path-of-exile-starter/issues/1127)) ([626b13d](https://github.com/quokkify/path-of-exile-starter/commit/626b13dbefed709bdaf4609d03711dcf4f08f675))
-* **gradle-wrapper:** update gradle to v9.8.1 ([#1126](https://github.com/quokkify/path-of-exile-starter/issues/1126)) ([578658f](https://github.com/quokkify/path-of-exile-starter/commit/578658f6df52580b9bcd3619e222be25d929a6af))
-* **gradle:** update io.netty:netty-all to v4.2.19.final ([#1125](https://github.com/quokkify/path-of-exile-starter/issues/1125)) ([918bd8e](https://github.com/quokkify/path-of-exile-starter/commit/918bd8ecc1b2838cc0484f602362ee26087baa2b))
-* **gradle:** update org.hibernate.orm:hibernate-jcache to v7.4.12.final ([#1122](https://github.com/quokkify/path-of-exile-starter/issues/1122)) ([0ac4b14](https://github.com/quokkify/path-of-exile-starter/commit/0ac4b14aff70cb1fd40536cf3dd0d81e64a28597))
+- bouncy_castle 1.85 → 1.86 ([#1110](https://github.com/quokkify/path-of-exile-starter/pull/1110))
+- busybox fd8d9aa → fd7dc98 ([#1099](https://github.com/quokkify/path-of-exile-starter/pull/1099))
+- checkstyle 14.1.0 → 14.3.0 ([#1111](https://github.com/quokkify/path-of-exile-starter/pull/1111))
+- flyway/flyway 13.7.0 → 13.10.0 ([#1099](https://github.com/quokkify/path-of-exile-starter/pull/1099), [#1101](https://github.com/quokkify/path-of-exile-starter/pull/1101), [#1119](https://github.com/quokkify/path-of-exile-starter/pull/1119), [#1127](https://github.com/quokkify/path-of-exile-starter/pull/1127))
+- gradle 9.7.1 → 9.8.1 ([#1112](https://github.com/quokkify/path-of-exile-starter/pull/1112), [#1126](https://github.com/quokkify/path-of-exile-starter/pull/1126))
+- io.netty:netty-all 4.2.18.Final → 4.2.19.Final ([#1125](https://github.com/quokkify/path-of-exile-starter/pull/1125))
+- org.bouncycastle:bcpkix-jdk18on 1.84 → 1.86 ([#1108](https://github.com/quokkify/path-of-exile-starter/pull/1108))
+- org.bouncycastle:bcprov-jdk18on 1.84 → 1.85 ([#1108](https://github.com/quokkify/path-of-exile-starter/pull/1108))
+- org.hibernate.orm:hibernate-jcache 7.4.10.Final → 7.4.12.Final ([#1104](https://github.com/quokkify/path-of-exile-starter/pull/1104), [#1122](https://github.com/quokkify/path-of-exile-starter/pull/1122))
+- org.mariadb.jdbc:mariadb-java-client 3.5.9 → 3.5.10 ([#1105](https://github.com/quokkify/path-of-exile-starter/pull/1105))
+- org.mock-server:mockserver-netty 7.0.0 → 7.6.0 ([#1113](https://github.com/quokkify/path-of-exile-starter/pull/1113))
+- org.mockito:mockito-core 5.23.0 → 5.24.0 ([#1115](https://github.com/quokkify/path-of-exile-starter/pull/1115))
+- org.projectlombok:lombok 1.18.46 → 1.18.48 ([#1106](https://github.com/quokkify/path-of-exile-starter/pull/1106))
+- org.slf4j:slf4j-api, org.slf4j:slf4j-simple 2.0.18 → 2.0.20 ([#1107](https://github.com/quokkify/path-of-exile-starter/pull/1107))
+
+**Maintenance**
+
+- **ci-kit:** hand off base, security, release, allure, renovate to modules ([#1144](https://github.com/quokkify/path-of-exile-starter/pull/1144))
+- **ci-kit:** hand off validate to core module ([#1132](https://github.com/quokkify/path-of-exile-starter/pull/1132))
+- **ci-kit:** prepare for the legacy template exit ([#1143](https://github.com/quokkify/path-of-exile-starter/pull/1143))
+- move the Java test job out of the generated Validate workflow ([#1118](https://github.com/quokkify/path-of-exile-starter/pull/1118))
+- **template:** align pull request template path ([#1103](https://github.com/quokkify/path-of-exile-starter/pull/1103))
+- **template:** update shared project template (23 PRs, [#1109](https://github.com/quokkify/path-of-exile-starter/pull/1109)–[#1149](https://github.com/quokkify/path-of-exile-starter/pull/1149))
+- **template:** update shared project template to ci-kit v3.0.0 ([#1116](https://github.com/quokkify/path-of-exile-starter/pull/1116))
+- **template:** update toolkit to v2.23.4 ([#1102](https://github.com/quokkify/path-of-exile-starter/pull/1102))
+
+</details>
 
 ## [0.2.0](https://github.com/quokkify/path-of-exile-starter/compare/v0.1.0...v0.2.0) (2026-09-29)
 
