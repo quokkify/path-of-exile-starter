@@ -12,4 +12,4 @@ permissions:
 
 jobs:
   ci:
-    uses: quokkify/ci-kit/.github/workflows/validate.yml@v4.3.2
+    uses: quokkify/ci-kit/.github/workflows/validate.yml@v4.3.5

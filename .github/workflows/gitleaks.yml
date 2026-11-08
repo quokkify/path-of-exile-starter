@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Check out full repository history
-        uses: quokkify/ci-kit/actions/checkout@v4.3.2
+        uses: quokkify/ci-kit/actions/checkout@v4.3.5
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -52,7 +52,7 @@ jobs:
           set -euo pipefail
           archive="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
           cd "$RUNNER_TEMP"
-          curl -fsSLo "$archive" "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${archive}"
+          curl --retry 5 --retry-all-errors --retry-max-time 120 -fsSLo "$archive" "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${archive}"
           printf '%s  %s\n' "$GITLEAKS_SHA256" "$archive" | sha256sum -c -
           tar -xzf "$archive" gitleaks
           mkdir -p "$RUNNER_TEMP/bin"
