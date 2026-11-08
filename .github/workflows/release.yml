@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   release:
-    uses: quokkify/ci-kit/.github/workflows/release-please.yml@v4.3.2
+    uses: quokkify/ci-kit/.github/workflows/release-please.yml@v4.3.5
     with:
       mode: single
       config-file: .github/release-please/config.json
