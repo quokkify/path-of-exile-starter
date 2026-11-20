@@ -197,7 +197,7 @@ public abstract class AbstractWebClientService {
         Mono.deferContextual(ctx -> captureBodyWithSize(response)
             .flatMap(captured -> {
               BodyWithSize body = captured.body();
-              StringBuilder sb = ctx.getOrDefault("requestLog", new StringBuilder());
+              StringBuilder sb = ctx.<StringBuilder>getOrEmpty("requestLog").orElseGet(StringBuilder::new);
               sb.append("==================== [HTTP Response] ===================\n");
               sb.append("< Status: ").append(captured.response().statusCode().value()).append("\n");
               captured.response().headers().asHttpHeaders().forEach((key, values) ->
