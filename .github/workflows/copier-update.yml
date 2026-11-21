@@ -9,7 +9,7 @@ on:
         required: false
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: copier-template-update
@@ -20,25 +20,32 @@ jobs:
     name: Apply the shared project template
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: read
+    outputs:
+      push: ${{ steps.update.outputs.push }}
+      ref: ${{ steps.update.outputs.ref }}
+      base: ${{ steps.update.outputs.base }}
     steps:
       - name: Check out full repository history
-        uses: quokkify/ci-kit/actions/checkout@v4.3.5
+        uses: quokkify/ci-kit/actions/checkout@v4.3.7
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up Python and Copier
-        uses: quokkify/ci-kit/actions/setup-python@v4.3.5
+        uses: quokkify/ci-kit/actions/setup-python@v4.3.7
         with:
           python-version: "3.14"
           package-manager: pip
           cache-dependencies: "false"
           install-command: python -m pip install copier==9.19.1
 
-      - name: Apply the template and push the update branch
+      - name: Apply the template
+        id: update
         env:
           TEMPLATE_REF: ${{ inputs.template-ref }}
           GH_TOKEN: ${{ github.token }}
-          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           BRANCH: automation/copier-template-update
         run: |
           set -euo pipefail
@@ -66,6 +73,7 @@ jobs:
           echo "Updating to ci-kit $ref"
 
           git switch -C "$BRANCH"
+          start="$(git rev-parse HEAD)"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
@@ -153,11 +161,100 @@ jobs:
             exit 0
           fi
 
-          remote="$(git ls-remote --heads origin "refs/heads/$BRANCH" | cut -f1)"
+          # The push runs in a separate job that runs no template code and alone holds the push
+          # credential. It receives the new commits as a bundle built on top of $start.
+          git bundle create "$RUNNER_TEMP/update.bundle" "$start..$BRANCH"
+          printf 'push=true\nref=%s\nbase=%s\n' "$ref" "$start" >> "$GITHUB_OUTPUT"
+
+      - name: Upload the update bundle
+        if: steps.update.outputs.push == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: copier-template-update
+          path: ${{ runner.temp }}/update.bundle
+          retention-days: 1
+          if-no-files-found: error
+
+  push:
+    name: Push the update branch
+    needs: update
+    if: needs.update.outputs.push == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Check out full repository history
+        uses: quokkify/ci-kit/actions/checkout@v4.3.7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Download the update bundle
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: copier-template-update
+          path: ${{ runner.temp }}/template-update
+
+      - name: Push the update branch
+        env:
+          PUSH_TOKEN: ${{ secrets.TEMPLATE_UPDATE_TOKEN || github.token }}
+          TEMPLATE_UPDATE_TOKEN_SET: ${{ secrets.TEMPLATE_UPDATE_TOKEN != '' }}
+          REF: ${{ needs.update.outputs.ref }}
+          BASE: ${{ needs.update.outputs.base }}
+          BUNDLE: ${{ runner.temp }}/template-update/update.bundle
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          BRANCH: automation/copier-template-update
+        run: |
+          set -euo pipefail
+          if [[ ! "$REF" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            printf 'Refusing to push the template update: the update job reported a template ref that is not an exact release tag.\n' >&2
+            exit 1
+          fi
+          header="$(printf 'x-access-token:%s' "$PUSH_TOKEN" | base64 | tr -d '\n')"
+          printf '::add-mask::%s\n' "$header"
+          export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.hooksPath GIT_CONFIG_VALUE_0=/dev/null
+
+          # Only commits built on the commit this job checked out are accepted.
+          head="$(git rev-parse HEAD)"
+          required=""
+          while IFS= read -r line; do
+            if [[ -z "$line" ]]; then
+              break
+            fi
+            if [[ "$line" == -* ]]; then
+              line="${line#-}"
+              required+="${line%% *} "
+            fi
+          done < "$BUNDLE"
+          if [[ "$BASE" != "$head" || "$required" != "$head " ]]; then
+            printf 'Refusing to push the template update: the bundle must build on %s, the commit this run checked out (update job started from %s; bundle requires %s).\n' "$head" "$BASE" "${required:-nothing}" >&2
+            exit 1
+          fi
+          git bundle verify --quiet "$BUNDLE"
+          git fetch --quiet "$BUNDLE" "+refs/heads/$BRANCH:refs/heads/$BRANCH"
+
+          # GitHub rejects a push by the Actions token that creates or changes a workflow file.
+          # Without TEMPLATE_UPDATE_TOKEN, stop here with the way out instead of that rejection.
+          if [[ "${TEMPLATE_UPDATE_TOKEN_SET:-false}" != true ]]; then
+            workflows="$(git diff --no-renames --name-only "$head" "refs/heads/$BRANCH" -- .github/workflows)"
+            if [[ -n "$workflows" ]]; then
+              printf 'Refusing to push the template update: CIK-CORE-031 the Actions token cannot push changes to workflow files:\n' >&2
+              while IFS= read -r file; do printf '  %s\n' "$file"; done <<<"$workflows" >&2
+              printf 'Add a TEMPLATE_UPDATE_TOKEN repository secret (a fine-grained token with Contents and Workflows read and write on this repository) and rerun, or run ci-kit update locally and open the pull request by hand. See https://github.com/quokkify/ci-kit/blob/main/docs/errors/CIK-CORE-031.md\n' >&2
+              exit 1
+            fi
+          fi
+
+          export GIT_CONFIG_COUNT=2
+          export GIT_CONFIG_KEY_1="http.$GITHUB_SERVER_URL/.extraheader" GIT_CONFIG_VALUE_1="AUTHORIZATION: basic $header"
+          url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git"
+
+          remote="$(git ls-remote --heads "$url" "refs/heads/$BRANCH" | cut -f1)"
           if [[ -n "$remote" ]]; then
-            git push "--force-with-lease=refs/heads/$BRANCH:$remote" origin "HEAD:refs/heads/$BRANCH"
+            git push "--force-with-lease=refs/heads/$BRANCH:$remote" "$url" "refs/heads/$BRANCH:refs/heads/$BRANCH"
           else
-            git push origin "HEAD:refs/heads/$BRANCH"
+            git push "$url" "refs/heads/$BRANCH:refs/heads/$BRANCH"
           fi
 
           # This workflow deliberately stops at the branch. A pull request opened with
@@ -166,7 +263,7 @@ jobs:
           # hand costs one click and keeps every check honest.
           {
             printf '## Template update ready\n\n'
-            printf 'Updated to %s and pushed %s.\n\n' "$ref" "$BRANCH"
+            printf 'Updated to %s and pushed %s.\n\n' "$REF" "$BRANCH"
             printf 'Open the pull request yourself so the checks actually run:\n\n'
             printf '%s/%s/compare/%s...%s?expand=1\n' \
               "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$DEFAULT_BRANCH" "$BRANCH"
