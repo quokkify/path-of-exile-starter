@@ -12,6 +12,7 @@ from typing import Any
 # Level-2 PR body sections that feed the notes; aliases map to one key.
 RICH_HEADINGS = {
     "release note": "release note",
+    "release notes": "release note",
     "highlight": "highlight",
     "usage example": "usage example",
     "migration": "migration",
